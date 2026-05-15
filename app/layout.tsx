@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import NavUser from './NavUser'
 
 export const metadata: Metadata = {
-  title: 'PlantMaster',
+  title: 'Permaculture Plant Picker',
   description: 'Plant presentation software for landscape professionals',
 }
 
@@ -22,7 +22,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <div className="flex items-center gap-8">
                 <Link href="/" className="flex items-center gap-2">
                   <span className="text-2xl">🌿</span>
-                  <span className="font-bold text-gray-900 text-lg">PlantMaster</span>
+                  <span className="font-bold text-gray-900 text-lg">Permaculture Plant Picker</span>
                 </Link>
                 <div className="hidden sm:flex items-center gap-6">
                   <Link href="/plants" className="text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">

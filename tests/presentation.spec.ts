@@ -45,11 +45,11 @@ test.describe('Presentation page — public', () => {
     await expect(page).toHaveURL(`/presents/${shareId}/reports`)
   })
 
-  test('PlantMaster logo links to homepage', async ({ page }) => {
+  test('Permaculture Plant Picker logo links to homepage', async ({ page }) => {
     const shareId = getShareId()
     await page.goto(`/presents/${shareId}`)
-    // Two PlantMaster links exist (nav + presentation header); target the header one
-    await page.locator('div.flex.items-start').getByRole('link', { name: /PlantMaster/ }).click()
+    // Two Permaculture Plant Picker links exist (nav + presentation header); target the header one
+    await page.locator('div.flex.items-start').getByRole('link', { name: /Permaculture Plant Picker/ }).click()
     await expect(page).toHaveURL('/')
   })
 

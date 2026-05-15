@@ -30,7 +30,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <span className="text-4xl">🌿</span>
           <h1 className="text-2xl font-bold text-gray-900 mt-3">Welcome back</h1>
-          <p className="text-gray-500 text-sm mt-1">Sign in to your PlantMaster account</p>
+          <p className="text-gray-500 text-sm mt-1">Sign in to your Permaculture Plant Picker account</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

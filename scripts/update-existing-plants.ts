@@ -126,7 +126,7 @@ async function enrichWithClaude(commonName: string, latinName: string): Promise<
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('PlantMaster — Back-fill Existing Plants')
+  console.log('Permaculture Plant Picker — Back-fill Existing Plants')
   console.log('========================================\n')
 
   if (!SERVICE_ROLE_KEY) throw new Error('SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) missing from .env.local')

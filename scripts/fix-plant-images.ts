@@ -34,7 +34,7 @@ async function fetchInatPhoto(latinName: string): Promise<string | null> {
       url.searchParams.set('locale', 'en')
       url.searchParams.set('per_page', '3')
       const res = await fetch(url.toString(), {
-        headers: { 'User-Agent': 'PlantMasterDB/1.0 (educational project; rossfischer)' },
+        headers: { 'User-Agent': 'PermaculturePlantPicker/1.0 (educational project; rossfischer)' },
       })
       if (!res.ok) continue
       const json = await res.json()
@@ -53,7 +53,7 @@ async function fetchInatPhoto(latinName: string): Promise<string | null> {
 }
 
 async function main() {
-  console.log('PlantMaster — Fix Wikimedia Images')
+  console.log('Permaculture Plant Picker — Fix Wikimedia Images')
   console.log('====================================\n')
 
   if (!SERVICE_ROLE_KEY) throw new Error('SUPABASE_SECRET_KEY missing from .env.local')

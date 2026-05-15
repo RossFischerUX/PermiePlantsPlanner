@@ -118,7 +118,7 @@ async function fetchINatPage(page: number): Promise<INatTaxon[]> {
   url.searchParams.set('is_active', 'true')
 
   const res = await fetch(url.toString(), {
-    headers: { 'User-Agent': 'PlantMasterDB/1.0 (educational project; rossfischer)' },
+    headers: { 'User-Agent': 'PermaculturePlantPicker/1.0 (educational project; rossfischer)' },
   })
 
   if (!res.ok) throw new Error(`iNaturalist API error: ${res.status} ${res.statusText}`)
@@ -183,7 +183,7 @@ async function getExistingLatinNames(): Promise<Set<string>> {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('PlantMaster — Bulk Import Script')
+  console.log('Permaculture Plant Picker — Bulk Import Script')
   console.log('=================================\n')
 
   if (!SERVICE_ROLE_KEY) throw new Error('SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) missing from .env.local')

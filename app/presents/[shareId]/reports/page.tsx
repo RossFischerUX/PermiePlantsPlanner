@@ -60,7 +60,7 @@ export default async function ReportsPage({ params }: { params: { shareId: strin
               <p className="text-xs text-gray-400 mt-1">{plants.length} plants</p>
             </div>
             <Link href="/" className="flex items-center gap-1.5 text-green-700 text-sm font-medium">
-              <span>🌿</span> PlantMaster
+              <span>🌿</span> Permaculture Plant Picker
             </Link>
           </div>
 
