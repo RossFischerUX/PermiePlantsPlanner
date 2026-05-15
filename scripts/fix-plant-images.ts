@@ -24,7 +24,7 @@ async function fetchInatPhoto(latinName: string): Promise<string | null> {
   // Also try genus-only as a final fallback.
   const baseName = latinName.replace(/'[^']*'/g, '').trim()
   const genus = baseName.split(' ')[0]
-  const queries = [...new Set([latinName, baseName, genus])]
+  const queries = Array.from(new Set([latinName, baseName, genus]))
 
   for (const q of queries) {
     try {
