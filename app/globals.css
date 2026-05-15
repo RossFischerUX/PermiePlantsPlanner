@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 body {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f9fafb;
-  color: #111827;
+  background: #f5f0e8;
+  color: #1c1207;
 }

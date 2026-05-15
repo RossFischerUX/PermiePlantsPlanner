@@ -36,20 +36,32 @@ function FilterSection({ label, options, selected, onToggle }: {
     <div className="mb-1">
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700 text-left"
+        className="w-full flex items-center justify-between py-2.5 text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] hover:text-warm-umber text-left"
       >
-        <span>{label}{selected.length > 0 && <span className="ml-1.5 text-green-700 normal-case font-medium">({selected.length})</span>}</span>
-        <span className="text-gray-400 text-base leading-none">{open ? '−' : '+'}</span>
+        <span>
+          {label}
+          {selected.length > 0 && (
+            <span className="ml-1.5 bg-terracotta text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 normal-case tracking-normal">
+              {selected.length}
+            </span>
+          )}
+        </span>
+        <svg
+          className={`w-3.5 h-3.5 text-warm-stone transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+        </svg>
       </button>
       {open && (
-        <div className="flex flex-col gap-1.5 pb-3 pt-1">
+        <div className="flex flex-col gap-2 pb-3 pt-1">
           {options.map(opt => (
-            <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 hover:text-gray-900">
+            <label key={opt} className="flex items-center gap-2.5 cursor-pointer text-sm text-warm-umber hover:text-dark-bark">
               <input
                 type="checkbox"
                 checked={selected.includes(opt)}
                 onChange={() => onToggle(opt)}
-                className="accent-green-700 w-4 h-4"
+                className="accent-forest w-4 h-4"
               />
               <span className="capitalize">{opt}</span>
             </label>
@@ -100,8 +112,8 @@ function PlantCard({ plant, lists, onAddToList, onRemoveFromList, onOpenCreateLi
     : null
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      <div className="relative h-48 bg-green-50">
+    <div className="bg-cream rounded-2xl border border-warm-stone/30 shadow-warm overflow-hidden hover:shadow-warm-md transition-shadow duration-200">
+      <div className="relative h-52 bg-stone-white">
         {plant.image_url ? (
           <Image
             src={plant.image_url}
@@ -112,47 +124,47 @@ function PlantCard({ plant, lists, onAddToList, onRemoveFromList, onOpenCreateLi
             unoptimized
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-5xl">🌿</div>
+          <div className="flex items-center justify-center h-full text-5xl opacity-30">🌿</div>
         )}
       </div>
       <div className="p-5">
-        <h3 className="font-bold text-gray-900 text-base mb-0.5">{plant.common_name}</h3>
+        <h3 className="font-playfair text-xl font-semibold text-dark-bark mb-0.5 leading-snug">{plant.common_name}</h3>
         {plant.latin_name && (
-          <p className="text-xs italic text-gray-400 mb-3">{plant.latin_name}</p>
+          <p className="text-sm italic text-warm-umber mb-3">{plant.latin_name}</p>
         )}
 
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-1.5 mb-3">
           {plant.sun && (
-            <span className="text-xs bg-yellow-50 text-yellow-800 px-2 py-1 rounded-full border border-yellow-100">
+            <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-800 px-2.5 py-1 rounded-full border border-amber-200 whitespace-nowrap">
               {SUN_ICONS[plant.sun]} {plant.sun}
             </span>
           )}
           {plant.water && (
-            <span className="text-xs bg-blue-50 text-blue-800 px-2 py-1 rounded-full border border-blue-100">
-              {WATER_ICONS[plant.water]} {plant.water} water
+            <span className="inline-flex items-center gap-1 text-xs bg-teal-50 text-teal-800 px-2.5 py-1 rounded-full border border-teal-200 whitespace-nowrap">
+              {WATER_ICONS[plant.water]} water
             </span>
           )}
           {sizeLabel && (
-            <span className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded-full border border-gray-100">
-              📏 {sizeLabel}
+            <span className="inline-flex items-center text-xs bg-stone-white text-warm-umber px-2.5 py-1 rounded-full border border-warm-stone/20 whitespace-nowrap">
+              {sizeLabel}
             </span>
           )}
         </div>
 
         {plant.description && (
-          <p className="text-xs text-gray-500 leading-relaxed line-clamp-3 mb-4">{plant.description}</p>
+          <p className="text-sm text-warm-stone leading-relaxed line-clamp-3 mb-4">{plant.description}</p>
         )}
 
         {lists.length > 0 && (
           <div ref={menuRef} className="relative" onClick={e => e.preventDefault()}>
             <button
               onClick={e => { e.preventDefault(); setShowMenu(v => !v) }}
-              className="w-full text-sm font-medium bg-green-700 text-white py-2 rounded-lg hover:bg-green-800 transition-colors"
+              className="w-full text-sm font-medium border border-forest text-forest py-2 rounded-lg hover:bg-forest hover:text-white transition-colors duration-150"
             >
               {added ? '✓ Added' : '+ Add to list'}
             </button>
             {showMenu && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-cream border border-warm-stone/30 rounded-xl shadow-warm-md z-10 overflow-hidden">
                 {lists.map(list => {
                   const isMember = memberListIds.has(list.id)
                   return (
@@ -170,10 +182,10 @@ function PlantCard({ plant, lists, onAddToList, onRemoveFromList, onOpenCreateLi
                         }
                         setTimeout(() => setShowMenu(false), 550)
                       }}
-                      className="w-full flex items-center gap-3 text-left text-sm px-4 py-3 hover:bg-green-50 border-b border-gray-100"
+                      className="w-full flex items-center gap-3 text-left text-sm px-4 py-3 hover:bg-stone-white border-b border-warm-stone/20 transition-colors"
                     >
-                      <span className="w-4 flex-shrink-0 text-green-700">{isMember ? '✓' : ''}</span>
-                      <span className={isMember ? 'text-green-700' : 'text-gray-700'}>{list.title}</span>
+                      <span className="w-4 flex-shrink-0 text-forest">{isMember ? '✓' : ''}</span>
+                      <span className={isMember ? 'text-forest font-medium' : 'text-dark-bark'}>{list.title}</span>
                     </button>
                   )
                 })}
@@ -183,7 +195,7 @@ function PlantCard({ plant, lists, onAddToList, onRemoveFromList, onOpenCreateLi
                     setShowMenu(false)
                     onOpenCreateList(plant.id)
                   }}
-                  className="w-full text-left text-sm px-4 py-3 hover:bg-green-50 text-green-700 font-medium"
+                  className="w-full text-left text-sm px-4 py-3 hover:bg-stone-white text-forest font-medium transition-colors"
                 >
                   + New list…
                 </button>
@@ -342,54 +354,68 @@ function PlantsPageInner() {
     sun.length + water.length + types.length + months.length +
     dormancy.length + growthRate.length + layers.length + permUses.length
 
+  const activePills = [
+    ...sun.map(v => ({ label: v, clear: () => toggle(sun, v, setSun) })),
+    ...water.map(v => ({ label: `${v} water`, clear: () => toggle(water, v, setWater) })),
+    ...types.map(v => ({ label: v, clear: () => toggle(types, v, setTypes) })),
+    ...months.map(v => ({ label: v, clear: () => toggle(months, v, setMonths) })),
+    ...dormancy.map(v => ({ label: v, clear: () => toggle(dormancy, v, setDormancy) })),
+    ...growthRate.map(v => ({ label: v, clear: () => toggle(growthRate, v, setGrowthRate) })),
+    ...layers.map(v => ({ label: v, clear: () => toggle(layers, v, setLayers) })),
+    ...permUses.map(v => ({ label: v, clear: () => toggle(permUses, v, setPermUses) })),
+  ]
+
   function clearAll() {
     setSearch(''); setSun([]); setWater([]); setTypes([]); setMonths([])
     setDormancy([]); setGrowthRate([]); setLayers([]); setPermUses([])
   }
 
+  const pageStart = page * PAGE_SIZE + 1
+  const pageEnd = Math.min((page + 1) * PAGE_SIZE, filtered.length)
+
   return (
     <>
     {createModalPlantId && (
       <div
-        className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-dark-bark/40 z-50 flex items-center justify-center p-4"
         onClick={() => { setCreateModalPlantId(null); setNewListName(''); setNewListDesc('') }}
       >
-        <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
-          <h2 className="text-base font-bold text-gray-900 mb-4">New Plant List</h2>
+        <div className="bg-cream rounded-2xl p-6 w-full max-w-sm shadow-warm-md border border-warm-stone/30" onClick={e => e.stopPropagation()}>
+          <h2 className="font-playfair text-xl font-semibold text-dark-bark mb-4">New Plant List</h2>
           <div className="mb-3">
-            <label className="block text-xs font-medium text-gray-600 mb-1">Name</label>
+            <label className="block text-[11px] font-semibold text-warm-stone uppercase tracking-[0.05em] mb-1.5">Name</label>
             <input
               type="text"
               value={newListName}
               onChange={e => setNewListName(e.target.value)}
               placeholder="My garden plan"
               autoFocus
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+              className="w-full px-3 py-2 border border-warm-stone/40 rounded-lg text-sm text-dark-bark bg-stone-white focus:outline-none focus:ring-2 focus:ring-forest/30 focus:border-forest"
             />
           </div>
           <div className="mb-5">
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Description <span className="text-gray-400 font-normal">(optional)</span>
+            <label className="block text-[11px] font-semibold text-warm-stone uppercase tracking-[0.05em] mb-1.5">
+              Description <span className="text-warm-stone/60 font-normal normal-case tracking-normal">(optional)</span>
             </label>
             <textarea
               value={newListDesc}
               onChange={e => setNewListDesc(e.target.value)}
               placeholder="What is this list for?"
               rows={2}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
+              className="w-full px-3 py-2 border border-warm-stone/40 rounded-lg text-sm text-dark-bark bg-stone-white focus:outline-none focus:ring-2 focus:ring-forest/30 focus:border-forest resize-none"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => { setCreateModalPlantId(null); setNewListName(''); setNewListDesc('') }}
-              className="flex-1 text-sm font-medium text-gray-600 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+              className="flex-1 text-sm font-medium text-warm-umber py-2 rounded-lg border border-warm-stone/40 hover:bg-stone-white transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleCreateList}
               disabled={!newListName.trim() || creatingList}
-              className="flex-1 text-sm font-medium bg-green-700 text-white py-2 rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 text-sm font-medium bg-forest text-white py-2 rounded-lg hover:bg-forest-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {creatingList ? 'Creating…' : 'Create List'}
             </button>
@@ -399,86 +425,109 @@ function PlantsPageInner() {
     )}
 
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex gap-8">
-      {/* Sidebar */}
-      <aside className="w-56 flex-shrink-0 hidden lg:block">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
-          <h3 className="font-bold text-gray-900 mb-5">Filter Plants</h3>
+      {/* Filter Sidebar */}
+      <aside className="w-72 flex-shrink-0 hidden lg:block">
+        <div className="bg-stone-white rounded-2xl p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+          <h3 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-4">Filter Plants</h3>
+
+          {activePills.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-4 pb-4 border-b border-warm-stone/20">
+              {activePills.map((pill, i) => (
+                <button
+                  key={i}
+                  onClick={pill.clear}
+                  className="flex items-center gap-1 bg-terracotta text-white text-[11px] rounded-full px-2.5 py-1 hover:bg-terracotta/80 transition-colors"
+                >
+                  <span className="capitalize">{pill.label}</span>
+                  <span className="text-white/70 ml-0.5">×</span>
+                </button>
+              ))}
+              <button
+                onClick={clearAll}
+                className="text-[11px] text-warm-stone hover:text-terracotta underline underline-offset-2 transition-colors"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
 
           <FilterSection label="Permaculture Uses" options={PERM_USE_OPTIONS} selected={permUses} onToggle={v => toggle(permUses, v, setPermUses)} />
           <FilterSection label="Forest Garden Layer" options={LAYER_OPTIONS} selected={layers} onToggle={v => toggle(layers, v, setLayers)} />
           <FilterSection label="Type" options={TYPE_OPTIONS} selected={types} onToggle={v => toggle(types, v, setTypes)} />
 
-          <hr className="border-gray-100 mb-5" />
+          <hr className="border-warm-stone/20 my-3" />
 
           <FilterSection label="Sun" options={SUN_OPTIONS} selected={sun} onToggle={v => toggle(sun, v, setSun)} />
           <FilterSection label="Water" options={WATER_OPTIONS} selected={water} onToggle={v => toggle(water, v, setWater)} />
           <FilterSection label="Growth Rate" options={GROWTH_OPTIONS} selected={growthRate} onToggle={v => toggle(growthRate, v, setGrowthRate)} />
           <FilterSection label="Dormancy" options={DORMANCY_OPTIONS} selected={dormancy} onToggle={v => toggle(dormancy, v, setDormancy)} />
 
-          <hr className="border-gray-100 mb-5" />
+          <hr className="border-warm-stone/20 my-3" />
 
           <FilterSection label="Bloom Month" options={MONTH_OPTIONS} selected={months} onToggle={v => toggle(months, v, setMonths)} />
-
-          {hasFilters && (
-            <button onClick={clearAll} className="text-xs text-red-500 hover:text-red-700 mt-2">
-              Clear all filters
-            </button>
-          )}
         </div>
       </aside>
 
-      {/* Main */}
+      {/* Main content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Plant Database</h1>
-          <span className="text-sm text-gray-400">{filtered.length} plants</span>
+        {/* Page header */}
+        <div className="mb-8">
+          <h1 className="font-playfair text-3xl font-semibold text-dark-bark mb-1.5">Plant Database</h1>
+          <p className="text-warm-umber text-base mb-5">Browse our curated permaculture plant collection</p>
+          <input
+            type="search"
+            placeholder="Search by name or latin name…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full px-5 py-3 border border-warm-stone/40 rounded-full text-sm text-dark-bark bg-stone-white focus:outline-none focus:ring-2 focus:ring-forest/30 focus:border-forest placeholder:text-warm-stone"
+          />
         </div>
-        <input
-          type="search"
-          placeholder="Search by name or latin name…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full mb-3 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white"
-        />
-        <div className="lg:hidden mb-6">
+
+        {/* Mobile filter toggle */}
+        <div className="lg:hidden mb-5">
           <button
             onClick={() => setDrawerOpen(v => !v)}
-            className={`w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors ${drawerOpen ? 'rounded-t-xl border-b-0' : 'rounded-xl'}`}
+            className={`w-full flex items-center justify-between px-4 py-3 bg-stone-white border border-warm-stone/30 text-sm font-medium text-warm-umber hover:bg-stone-white/80 transition-colors ${drawerOpen ? 'rounded-t-xl border-b-0' : 'rounded-xl'}`}
           >
             <span className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-warm-stone" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
               </svg>
               Filters
               {activeFilterCount > 0 && (
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-700 text-white text-xs font-bold">
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-terracotta text-white text-xs font-bold">
                   {activeFilterCount}
                 </span>
               )}
             </span>
-            <span className="text-gray-400 text-base leading-none">{drawerOpen ? '−' : '+'}</span>
+            <svg
+              className={`w-4 h-4 text-warm-stone transition-transform duration-200 ${drawerOpen ? 'rotate-180' : ''}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
           {drawerOpen && (
-            <div className="border border-gray-200 border-t-0 rounded-b-xl bg-white overflow-hidden">
+            <div className="border border-warm-stone/30 border-t-0 rounded-b-xl bg-stone-white overflow-hidden">
               <div className="px-5 py-3 max-h-[60vh] overflow-y-auto">
                 <FilterSection label="Permaculture Uses" options={PERM_USE_OPTIONS} selected={permUses} onToggle={v => toggle(permUses, v, setPermUses)} />
                 <FilterSection label="Forest Garden Layer" options={LAYER_OPTIONS}   selected={layers}   onToggle={v => toggle(layers, v, setLayers)} />
                 <FilterSection label="Type"                options={TYPE_OPTIONS}    selected={types}    onToggle={v => toggle(types, v, setTypes)} />
-                <hr className="border-gray-100 my-2" />
+                <hr className="border-warm-stone/20 my-2" />
                 <FilterSection label="Sun"         options={SUN_OPTIONS}      selected={sun}        onToggle={v => toggle(sun, v, setSun)} />
                 <FilterSection label="Water"       options={WATER_OPTIONS}    selected={water}      onToggle={v => toggle(water, v, setWater)} />
                 <FilterSection label="Growth Rate" options={GROWTH_OPTIONS}   selected={growthRate} onToggle={v => toggle(growthRate, v, setGrowthRate)} />
                 <FilterSection label="Dormancy"    options={DORMANCY_OPTIONS} selected={dormancy}   onToggle={v => toggle(dormancy, v, setDormancy)} />
-                <hr className="border-gray-100 my-2" />
+                <hr className="border-warm-stone/20 my-2" />
                 <FilterSection label="Bloom Month" options={MONTH_OPTIONS}    selected={months}     onToggle={v => toggle(months, v, setMonths)} />
               </div>
-              <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-gray-100 bg-gray-50">
-                <button onClick={clearAll} className="text-sm font-medium text-red-500 hover:text-red-700">
+              <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-warm-stone/20">
+                <button onClick={clearAll} className="text-sm font-medium text-warm-stone hover:text-terracotta transition-colors">
                   Clear all
                 </button>
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="bg-green-700 text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-green-800"
+                  className="bg-forest text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-forest-dark transition-colors"
                 >
                   Show {filtered.length} plant{filtered.length !== 1 ? 's' : ''}
                 </button>
@@ -486,12 +535,17 @@ function PlantsPageInner() {
             </div>
           )}
         </div>
+
         {loading ? (
-          <p className="text-gray-400 text-center py-20">Loading plants…</p>
+          <p className="text-warm-stone text-center py-20">Loading plants…</p>
         ) : filtered.length === 0 ? (
-          <p className="text-gray-400 text-center py-20">No plants match your filters.</p>
+          <p className="text-warm-stone text-center py-20">No plants match your filters.</p>
         ) : (
           <>
+            <p className="text-sm font-medium text-warm-umber mb-5">
+              Showing {pageStart}–{pageEnd} of {filtered.length} plant{filtered.length !== 1 ? 's' : ''}
+            </p>
+
             <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
               {filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map(plant => (
                 <Link key={plant.id} href={`/plants/${plant.id}`} className="block">
@@ -499,22 +553,23 @@ function PlantsPageInner() {
                 </Link>
               ))}
             </div>
+
             {filtered.length > PAGE_SIZE && (
-              <div className="flex items-center justify-center gap-3 mt-10">
+              <div className="flex items-center gap-3 mt-10">
                 <button
                   onClick={() => { setPage(p => p - 1); window.scrollTo(0, 0) }}
                   disabled={page === 0}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-sm font-medium text-warm-umber border border-warm-stone/40 rounded-lg hover:bg-stone-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   ← Previous
                 </button>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-warm-stone">
                   Page {page + 1} of {Math.ceil(filtered.length / PAGE_SIZE)}
                 </span>
                 <button
                   onClick={() => { setPage(p => p + 1); window.scrollTo(0, 0) }}
                   disabled={(page + 1) * PAGE_SIZE >= filtered.length}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-sm font-medium text-warm-umber border border-warm-stone/40 rounded-lg hover:bg-stone-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   Next →
                 </button>
@@ -530,7 +585,7 @@ function PlantsPageInner() {
 
 export default function PlantsPage() {
   return (
-    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-10 text-gray-400">Loading…</div>}>
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-10 text-warm-stone">Loading…</div>}>
       <PlantsPageInner />
     </Suspense>
   )

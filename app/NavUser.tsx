@@ -17,10 +17,10 @@ export default function NavUser({ user }: { user: User | null }) {
   if (!user) {
     return (
       <div className="flex items-center gap-3">
-        <Link href="/auth/login" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+        <Link href="/auth/login" className="text-sm font-medium text-warm-umber hover:text-dark-bark transition-colors">
           Log in
         </Link>
-        <Link href="/auth/signup" className="text-sm font-medium bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors">
+        <Link href="/auth/signup" className="text-sm font-medium bg-forest text-white px-4 py-2 rounded-lg hover:bg-forest-dark transition-colors">
           Sign up
         </Link>
       </div>
@@ -29,10 +29,10 @@ export default function NavUser({ user }: { user: User | null }) {
 
   return (
     <div className="flex items-center gap-4">
-      <span className="text-sm text-gray-500 hidden sm:block">{user.email}</span>
+      <span className="text-sm text-warm-stone hidden sm:block">{user.email}</span>
       <button
         onClick={handleSignOut}
-        className="text-sm font-medium text-gray-600 hover:text-gray-900"
+        className="text-sm font-medium text-warm-umber hover:text-dark-bark transition-colors"
       >
         Sign out
       </button>
