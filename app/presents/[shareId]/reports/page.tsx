@@ -23,14 +23,12 @@ export default async function ReportsPage({ params }: { params: { shareId: strin
 
   const plants: Plant[] = (items ?? []).map((i: { plant: Plant }) => i.plant).filter(Boolean)
 
-  // Group by water
   const byWater: Record<string, Plant[]> = {}
   plants.forEach(p => {
     const key = p.water ?? 'Unknown'
     byWater[key] = [...(byWater[key] ?? []), p]
   })
 
-  // Group by bloom month
   const byMonth: Record<string, Plant[]> = {}
   plants.forEach(p => {
     (p.bloom_months ?? []).forEach(m => {
@@ -38,7 +36,6 @@ export default async function ReportsPage({ params }: { params: { shareId: strin
     })
   })
 
-  // Group by season
   const bySeason: Record<string, Plant[]> = {}
   plants.forEach(p => {
     (p.season_of_interest ?? []).forEach(s => {
@@ -49,69 +46,77 @@ export default async function ReportsPage({ params }: { params: { shareId: strin
   const MONTH_ORDER = ['January','February','March','April','May','June','July','August','September','October','November','December']
   const SEASON_ORDER = ['Spring', 'Summer', 'Fall', 'Winter']
 
+  const waterBadge = (level: string) => {
+    const styles: Record<string, string> = {
+      low: 'bg-sage-mist/30 text-forest',
+      moderate: 'bg-teal-100 text-teal-800',
+      high: 'bg-blue-100 text-blue-800',
+    }
+    return styles[level] ?? 'bg-stone-100 text-warm-umber'
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          <div className="flex items-start justify-between">
+    <div className="min-h-screen bg-parchment">
+      {/* Presentation header */}
+      <header className="bg-parchment border-b border-warm-stone/20 sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-6 py-5">
+          <div className="flex items-start justify-between gap-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{list.title}</h1>
-              {list.description && <p className="text-gray-500 mt-1 text-sm">{list.description}</p>}
-              <p className="text-xs text-gray-400 mt-1">{plants.length} plants</p>
+              <h1 className="font-playfair text-2xl font-bold text-dark-bark leading-snug">{list.title}</h1>
+              {list.description && <p className="text-warm-umber text-sm mt-1">{list.description}</p>}
+              <p className="text-xs text-warm-stone mt-1">{plants.length} plant{plants.length !== 1 ? 's' : ''}</p>
             </div>
-            <Link href="/" className="flex items-center gap-1.5 text-green-700 text-sm font-medium">
-              <span>🌿</span> Permaculture Plant Picker
+            <Link href="/" className="flex-shrink-0 text-xs font-semibold uppercase tracking-[0.1em] text-forest hover:text-forest-dark transition-colors mt-1">
+              🌿 Permaculture Plant Picker
             </Link>
           </div>
-
           {/* Tabs */}
-          <div className="flex gap-6 mt-6 border-b border-gray-200 -mb-px">
+          <div className="flex gap-6 mt-4 border-b border-warm-stone/20 -mb-px">
             <Link
               href={`/presents/${shareId}`}
-              className="pb-3 text-sm font-medium text-gray-500 hover:text-gray-800 border-b-2 border-transparent"
+              className="pb-3 text-sm font-medium text-warm-umber hover:text-dark-bark border-b-2 border-transparent transition-colors"
             >
               Plants
             </Link>
-            <span className="pb-3 text-sm font-semibold text-green-700 border-b-2 border-green-700">
+            <span className="pb-3 text-sm font-semibold text-forest border-b-2 border-forest">
               Reports
             </span>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-12">
+      <main className="max-w-5xl mx-auto px-6 py-10 space-y-12">
 
         {/* By Water Requirements */}
         <section>
-          <h2 className="text-lg font-bold text-gray-900 mb-4">By Water Requirements</h2>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <h2 className="font-playfair text-xl font-semibold text-dark-bark mb-4">By Water Requirements</h2>
+          <div className="bg-cream rounded-2xl border border-warm-stone/20 shadow-warm overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Plant</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Latin Name</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Water</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Sun</th>
+                <tr className="bg-stone-white border-b border-warm-stone/15">
+                  <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-warm-stone">Plant</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-warm-stone">Latin Name</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-warm-stone">Water</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-warm-stone">Sun</th>
                 </tr>
               </thead>
               <tbody>
                 {['low', 'moderate', 'high'].flatMap(level =>
-                  (byWater[level] ?? []).map((p, i) => (
-                    <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="px-6 py-3 font-medium text-gray-900">{p.common_name}</td>
-                      <td className="px-6 py-3 italic text-gray-400">{p.latin_name ?? '—'}</td>
+                  (byWater[level] ?? []).map((p) => (
+                    <tr key={p.id} className="border-b border-warm-stone/10 hover:bg-parchment/60 transition-colors">
+                      <td className="px-6 py-3 font-medium text-dark-bark">{p.common_name}</td>
+                      <td className="px-6 py-3 italic text-warm-umber text-xs">{p.latin_name ?? '—'}</td>
                       <td className="px-6 py-3">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                          level === 'low' ? 'bg-green-50 text-green-700' :
-                          level === 'moderate' ? 'bg-blue-50 text-blue-700' :
-                          'bg-indigo-50 text-indigo-700'
-                        }`}>
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${waterBadge(level)}`}>
                           {level}
                         </span>
                       </td>
-                      <td className="px-6 py-3 text-gray-500 capitalize">{p.sun ?? '—'}</td>
+                      <td className="px-6 py-3 text-warm-umber capitalize text-xs">{p.sun ?? '—'}</td>
                     </tr>
                   ))
+                )}
+                {Object.keys(byWater).length === 0 && (
+                  <tr><td colSpan={4} className="px-6 py-8 text-warm-stone text-center">No water data available.</td></tr>
                 )}
               </tbody>
             </table>
@@ -120,24 +125,24 @@ export default async function ReportsPage({ params }: { params: { shareId: strin
 
         {/* By Bloom Month */}
         <section>
-          <h2 className="text-lg font-bold text-gray-900 mb-4">By Bloom Month</h2>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <h2 className="font-playfair text-xl font-semibold text-dark-bark mb-4">By Bloom Month</h2>
+          <div className="bg-cream rounded-2xl border border-warm-stone/20 shadow-warm overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Month</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Plants in Bloom</th>
+                <tr className="bg-stone-white border-b border-warm-stone/15">
+                  <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-warm-stone w-36">Month</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-warm-stone">Plants in Bloom</th>
                 </tr>
               </thead>
               <tbody>
                 {MONTH_ORDER.filter(m => byMonth[m]).map(month => (
-                  <tr key={month} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="px-6 py-3 font-medium text-gray-900 w-32">{month}</td>
-                    <td className="px-6 py-3 text-gray-600">{byMonth[month].map(p => p.common_name).join(', ')}</td>
+                  <tr key={month} className="border-b border-warm-stone/10 hover:bg-parchment/60 transition-colors">
+                    <td className="px-6 py-3 font-medium text-dark-bark">{month}</td>
+                    <td className="px-6 py-3 text-warm-umber">{byMonth[month].map(p => p.common_name).join(', ')}</td>
                   </tr>
                 ))}
                 {Object.keys(byMonth).length === 0 && (
-                  <tr><td colSpan={2} className="px-6 py-6 text-gray-400 text-center">No bloom month data available.</td></tr>
+                  <tr><td colSpan={2} className="px-6 py-8 text-warm-stone text-center">No bloom month data available.</td></tr>
                 )}
               </tbody>
             </table>
@@ -146,30 +151,40 @@ export default async function ReportsPage({ params }: { params: { shareId: strin
 
         {/* By Season of Interest */}
         <section>
-          <h2 className="text-lg font-bold text-gray-900 mb-4">By Season of Interest</h2>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <h2 className="font-playfair text-xl font-semibold text-dark-bark mb-4">By Season of Interest</h2>
+          <div className="bg-cream rounded-2xl border border-warm-stone/20 shadow-warm overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Season</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Plants</th>
+                <tr className="bg-stone-white border-b border-warm-stone/15">
+                  <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-warm-stone w-36">Season</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-warm-stone">Plants</th>
                 </tr>
               </thead>
               <tbody>
                 {SEASON_ORDER.filter(s => bySeason[s]).map(season => (
-                  <tr key={season} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="px-6 py-3 font-medium text-gray-900 w-32">{season}</td>
-                    <td className="px-6 py-3 text-gray-600">{bySeason[season].map(p => p.common_name).join(', ')}</td>
+                  <tr key={season} className="border-b border-warm-stone/10 hover:bg-parchment/60 transition-colors">
+                    <td className="px-6 py-3 font-medium text-dark-bark">{season}</td>
+                    <td className="px-6 py-3 text-warm-umber">{bySeason[season].map(p => p.common_name).join(', ')}</td>
                   </tr>
                 ))}
                 {Object.keys(bySeason).length === 0 && (
-                  <tr><td colSpan={2} className="px-6 py-6 text-gray-400 text-center">No season data available.</td></tr>
+                  <tr><td colSpan={2} className="px-6 py-8 text-warm-stone text-center">No season data available.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
         </section>
-      </div>
+
+      </main>
+
+      <footer className="border-t border-warm-stone/20 mt-10">
+        <div className="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
+          <p className="text-xs text-warm-stone">© 2026 Permaculture Plant Picker. All rights reserved.</p>
+          <Link href="/" className="text-xs font-semibold text-forest hover:underline">
+            Permaculture Plant Picker
+          </Link>
+        </div>
+      </footer>
     </div>
   )
 }
