@@ -137,7 +137,7 @@ export default async function PlantDetailPage({ params }: { params: { id: string
           </div>
           {plant.permaculture_uses?.length && (
             <div className="flex flex-wrap gap-2">
-              {plant.permaculture_uses.map(use => (
+              {plant.permaculture_uses.map((use: string) => (
                 <span key={use} className="text-xs bg-green-50 text-green-800 px-3 py-1.5 rounded-full border border-green-100 capitalize">
                   {use}
                 </span>
