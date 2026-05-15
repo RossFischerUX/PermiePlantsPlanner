@@ -165,7 +165,7 @@ function PlantCard({ plant, lists, onAddToList, onRemoveFromList, onOpenCreateLi
                           setMemberListIds(prev => { const next = new Set(prev); next.delete(list.id); return next })
                         } else {
                           onAddToList(plant.id, list.id)
-                          setMemberListIds(prev => new Set([...prev, list.id]))
+                          setMemberListIds(prev => { const next = new Set(prev); next.add(list.id); return next })
                           setAdded(true)
                         }
                         setTimeout(() => setShowMenu(false), 550)
