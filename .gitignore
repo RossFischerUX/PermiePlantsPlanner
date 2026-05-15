@@ -34,3 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+tests/.auth-state.json
+tests/.test-share-id.json
+test-results/

@@ -1,6 +1,7 @@
 export type Sun = 'full sun' | 'part shade' | 'full shade'
 export type Water = 'low' | 'moderate' | 'high'
 export type PlantType = 'shrub' | 'tree' | 'perennial' | 'groundcover' | 'vine' | 'grass'
+export type ForestGardenLayer = 'canopy' | 'sub-canopy' | 'shrub' | 'herb' | 'ground cover' | 'rhizosphere' | 'climber'
 
 export interface Plant {
   id: string
@@ -18,6 +19,13 @@ export interface Plant {
   season_of_interest: string[] | null
   plant_type: PlantType | null
   image_url: string | null
+  native_range: string | null
+  usda_zones: string | null
+  form: string | null
+  growth_rate: string | null
+  dormancy: string | null
+  forest_garden_layer: ForestGardenLayer | null
+  permaculture_uses: string[] | null
   created_at: string
 }
 

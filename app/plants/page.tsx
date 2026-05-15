@@ -4,11 +4,17 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Plant, PlantList } from '@/lib/types'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const SUN_OPTIONS = ['full sun', 'part shade', 'full shade']
 const WATER_OPTIONS = ['low', 'moderate', 'high']
 const TYPE_OPTIONS = ['shrub', 'tree', 'perennial', 'groundcover', 'vine', 'grass']
 const MONTH_OPTIONS = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const DORMANCY_OPTIONS = ['evergreen', 'deciduous', 'semi-evergreen']
+const GROWTH_OPTIONS = ['slow', 'moderate', 'fast']
+const SEASON_OPTIONS = ['Spring', 'Summer', 'Fall', 'Winter']
+const LAYER_OPTIONS = ['canopy', 'sub-canopy', 'shrub', 'herb', 'ground cover', 'rhizosphere', 'climber']
+const PERM_USE_OPTIONS = ['nitrogen fixer', 'dynamic accumulator', 'edible', 'medicinal', 'pollinator', 'biomass', 'windbreak', 'wildlife habitat', 'pioneer', 'insectary']
 
 const SUN_ICONS: Record<string, string> = {
   'full sun': '☀️',
@@ -78,9 +84,9 @@ function PlantCard({ plant, lists, onAddToList }: {
         )}
 
         {lists.length > 0 && (
-          <div className="relative">
+          <div className="relative" onClick={e => e.preventDefault()}>
             <button
-              onClick={() => setShowMenu(v => !v)}
+              onClick={e => { e.preventDefault(); setShowMenu(v => !v) }}
               className="w-full text-sm font-medium bg-green-700 text-white py-2 rounded-lg hover:bg-green-800 transition-colors"
             >
               {added ? '✓ Added' : '+ Add to list'}
@@ -90,7 +96,8 @@ function PlantCard({ plant, lists, onAddToList }: {
                 {lists.map(list => (
                   <button
                     key={list.id}
-                    onClick={() => {
+                    onClick={e => {
+                      e.preventDefault()
                       onAddToList(plant.id, list.id)
                       setAdded(true)
                       setShowMenu(false)
@@ -120,6 +127,11 @@ export default function PlantsPage() {
   const [water, setWater] = useState<string[]>([])
   const [types, setTypes] = useState<string[]>([])
   const [months, setMonths] = useState<string[]>([])
+  const [dormancy, setDormancy] = useState<string[]>([])
+  const [growthRate, setGrowthRate] = useState<string[]>([])
+  const [seasons, setSeasons] = useState<string[]>([])
+  const [layers, setLayers] = useState<string[]>([])
+  const [permUses, setPermUses] = useState<string[]>([])
 
   useEffect(() => {
     async function load() {
@@ -153,11 +165,14 @@ export default function PlantsPage() {
     if (sun.length) result = result.filter(p => p.sun && sun.includes(p.sun))
     if (water.length) result = result.filter(p => p.water && water.includes(p.water))
     if (types.length) result = result.filter(p => p.plant_type && types.includes(p.plant_type))
-    if (months.length) result = result.filter(p =>
-      p.bloom_months?.some(m => months.includes(m))
-    )
+    if (months.length) result = result.filter(p => p.bloom_months?.some(m => months.includes(m)))
+    if (dormancy.length) result = result.filter(p => p.dormancy && dormancy.includes(p.dormancy))
+    if (growthRate.length) result = result.filter(p => p.growth_rate && growthRate.includes(p.growth_rate))
+    if (seasons.length) result = result.filter(p => p.season_of_interest?.some(s => seasons.includes(s)))
+    if (layers.length) result = result.filter(p => p.forest_garden_layer && layers.includes(p.forest_garden_layer))
+    if (permUses.length) result = result.filter(p => p.permaculture_uses?.some(u => permUses.includes(u)))
     setFiltered(result)
-  }, [plants, search, sun, water, types, months])
+  }, [plants, search, sun, water, types, months, dormancy, growthRate, seasons, layers, permUses])
 
   useEffect(() => { applyFilters() }, [applyFilters])
 
@@ -186,38 +201,64 @@ export default function PlantsPage() {
 
   const FilterSection = ({ label, options, selected, onToggle }: {
     label: string; options: string[]; selected: string[]; onToggle: (v: string) => void
-  }) => (
-    <div className="mb-6">
-      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{label}</h4>
-      <div className="flex flex-col gap-1.5">
-        {options.map(opt => (
-          <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 hover:text-gray-900">
-            <input
-              type="checkbox"
-              checked={selected.includes(opt)}
-              onChange={() => onToggle(opt)}
-              className="accent-green-700 w-4 h-4"
-            />
-            <span className="capitalize">{opt}</span>
-          </label>
-        ))}
+  }) => {
+    const [open, setOpen] = useState(false)
+    return (
+      <div className="mb-1">
+        <button
+          onClick={() => setOpen(v => !v)}
+          className="w-full flex items-center justify-between py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700"
+        >
+          <span>{label}{selected.length > 0 && <span className="ml-1.5 text-green-700 normal-case font-medium">({selected.length})</span>}</span>
+          <span className="text-gray-400 text-base leading-none">{open ? '−' : '+'}</span>
+        </button>
+        {open && (
+          <div className="flex flex-col gap-1.5 pb-3 pt-1">
+            {options.map(opt => (
+              <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 hover:text-gray-900">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(opt)}
+                  onChange={() => onToggle(opt)}
+                  className="accent-green-700 w-4 h-4"
+                />
+                <span className="capitalize">{opt}</span>
+              </label>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex gap-8">
       {/* Sidebar */}
       <aside className="w-56 flex-shrink-0 hidden lg:block">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sticky top-24">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
           <h3 className="font-bold text-gray-900 mb-5">Filter Plants</h3>
+
           <FilterSection label="Sun" options={SUN_OPTIONS} selected={sun} onToggle={v => toggle(sun, v, setSun)} />
           <FilterSection label="Water" options={WATER_OPTIONS} selected={water} onToggle={v => toggle(water, v, setWater)} />
+
+          <hr className="border-gray-100 mb-5" />
+
           <FilterSection label="Type" options={TYPE_OPTIONS} selected={types} onToggle={v => toggle(types, v, setTypes)} />
+          <FilterSection label="Dormancy" options={DORMANCY_OPTIONS} selected={dormancy} onToggle={v => toggle(dormancy, v, setDormancy)} />
+          <FilterSection label="Growth Rate" options={GROWTH_OPTIONS} selected={growthRate} onToggle={v => toggle(growthRate, v, setGrowthRate)} />
+
+          <hr className="border-gray-100 mb-5" />
+
           <FilterSection label="Bloom Month" options={MONTH_OPTIONS} selected={months} onToggle={v => toggle(months, v, setMonths)} />
-          {(sun.length || water.length || types.length || months.length) ? (
+          <FilterSection label="Season of Interest" options={SEASON_OPTIONS} selected={seasons} onToggle={v => toggle(seasons, v, setSeasons)} />
+
+          <hr className="border-gray-100 mb-5" />
+
+          <FilterSection label="Forest Garden Layer" options={LAYER_OPTIONS} selected={layers} onToggle={v => toggle(layers, v, setLayers)} />
+          <FilterSection label="Permaculture Uses" options={PERM_USE_OPTIONS} selected={permUses} onToggle={v => toggle(permUses, v, setPermUses)} />
+          {(sun.length || water.length || types.length || months.length || dormancy.length || growthRate.length || seasons.length || layers.length || permUses.length) ? (
             <button
-              onClick={() => { setSun([]); setWater([]); setTypes([]); setMonths([]) }}
+              onClick={() => { setSun([]); setWater([]); setTypes([]); setMonths([]); setDormancy([]); setGrowthRate([]); setSeasons([]); setLayers([]); setPermUses([]) }}
               className="text-xs text-red-500 hover:text-red-700 mt-2"
             >
               Clear all filters
@@ -246,7 +287,9 @@ export default function PlantsPage() {
         ) : (
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {filtered.map(plant => (
-              <PlantCard key={plant.id} plant={plant} lists={lists} onAddToList={handleAddToList} />
+              <Link key={plant.id} href={`/plants/${plant.id}`} className="block">
+                <PlantCard plant={plant} lists={lists} onAddToList={handleAddToList} />
+              </Link>
             ))}
           </div>
         )}

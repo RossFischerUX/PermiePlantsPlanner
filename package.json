@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "import-plants": "tsx scripts/import-plants.ts",
+    "update-plants": "tsx scripts/update-existing-plants.ts",
+    "retry-plants": "tsx scripts/retry-skipped-plants.ts",
+    "import-permaculture": "tsx scripts/import-permaculture-plants.ts",
+    "fix-images": "tsx scripts/fix-plant-images.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -16,11 +21,15 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.96.0",
+    "@playwright/test": "^1.60.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv": "^17.4.2",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.22.0",
     "typescript": "^5"
   }
 }

@@ -10,8 +10,8 @@ export default function NavUser({ user }: { user: User | null }) {
   const supabase = createClient()
 
   async function handleSignOut() {
-    await supabase.auth.signOut({ scope: 'local' })
-    router.refresh()
+    await supabase.auth.signOut()
+    router.push('/auth/signout')
   }
 
   if (!user) {
