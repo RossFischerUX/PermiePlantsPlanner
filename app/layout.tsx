@@ -52,6 +52,36 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </div>
         </nav>
         <main>{children}</main>
+        <footer className="bg-forest-dark text-white">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-14">
+            <div className="flex flex-col md:flex-row justify-between gap-10">
+              <div className="max-w-xs">
+                <span className="font-playfair font-bold text-xl tracking-tight">Permaculture Plant Picker</span>
+                <p className="text-white/60 text-sm mt-2 leading-relaxed">
+                  Curating the living heritage of landscape architecture.
+                </p>
+                <p className="text-white/30 text-xs mt-5">© 2026 Permaculture Plant Picker. All rights reserved.</p>
+              </div>
+              <div className="flex gap-12 sm:gap-16">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/40 mb-4">App</p>
+                  <div className="flex flex-col gap-3">
+                    <Link href="/plants" className="text-sm text-white/70 hover:text-white transition-colors">Plant Database</Link>
+                    <Link href="/lists" className="text-sm text-white/70 hover:text-white transition-colors">My Lists</Link>
+                    <Link href="/auth/signup" className="text-sm text-white/70 hover:text-white transition-colors">Sign Up</Link>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/40 mb-4">Info</p>
+                  <div className="flex flex-col gap-3">
+                    <Link href="/auth/login" className="text-sm text-white/70 hover:text-white transition-colors">Sign In</Link>
+                    <Link href="/plants" className="text-sm text-white/70 hover:text-white transition-colors">Archive</Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   )
