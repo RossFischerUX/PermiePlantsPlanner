@@ -17,9 +17,9 @@ const WATER_ICONS: Record<string, string> = {
 
 function InfoCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-gray-50 rounded-xl p-4">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-sm text-gray-800 capitalize">{value}</p>
+    <div className="bg-stone-white rounded-xl p-4">
+      <p className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.05em] mb-1">{label}</p>
+      <p className="text-sm text-dark-bark capitalize">{value}</p>
     </div>
   )
 }
@@ -60,47 +60,73 @@ export default async function PlantDetailPage({ params }: { params: { id: string
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
-      {/* Hero image */}
-      {plant.image_url && (
-        <div className="relative w-full h-80 rounded-2xl overflow-hidden bg-green-50 mb-8">
-          <Image
-            src={plant.image_url}
-            alt={plant.common_name}
-            fill
-            className="object-cover"
-            unoptimized
-            sizes="(max-width: 896px) 100vw, 896px"
-            priority
-          />
-        </div>
-      )}
-
       {/* Back link */}
-      <Link href="/plants" className="text-sm text-gray-400 hover:text-gray-600">
+      <Link href="/plants" className="inline-flex items-center gap-1.5 text-sm text-warm-stone hover:text-warm-umber transition-colors mb-6">
         ← Plant Database
       </Link>
 
-      {/* Name + Add to list */}
-      <div className="flex items-start justify-between mt-4 mb-6 gap-4">
+      <div className="bg-cream rounded-2xl border border-warm-stone/30 shadow-warm overflow-hidden">
+        {/* Hero image */}
+        {plant.image_url && (
+          <div className="relative w-full h-96 bg-stone-white">
+            <Image
+              src={plant.image_url}
+              alt={plant.common_name}
+              fill
+              className="object-cover"
+              unoptimized
+              sizes="(max-width: 896px) 100vw, 896px"
+              priority
+            />
+          </div>
+        )}
+
+        <div className="p-8 sm:p-10">
+        {/* Name + Add to list */}
+        <div className="flex items-start justify-between mb-3 gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{plant.common_name}</h1>
-          <p className="text-base italic text-gray-400 mt-1">
-            {plant.latin_name}
-            {plant.plant_type && (
-              <span className="not-italic text-gray-300"> · </span>
-            )}
-            {plant.plant_type && (
-              <span className="not-italic capitalize text-gray-500">{plant.plant_type}</span>
-            )}
-          </p>
+          <h1 className="font-playfair text-4xl font-semibold text-dark-bark leading-tight">{plant.common_name}</h1>
+          {plant.latin_name && (
+            <p className="text-base italic text-warm-umber mt-1.5">{plant.latin_name}</p>
+          )}
         </div>
-        <AddToListClient plantId={plant.id} />
+        <div className="flex-shrink-0 mt-1">
+          <AddToListClient plantId={plant.id} />
+        </div>
       </div>
+
+      {/* Quick badges */}
+      {(plant.sun || plant.water || plant.plant_type) && (
+        <div className="flex flex-wrap gap-2 mb-8">
+          {plant.plant_type && (
+            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-terracotta bg-terracotta/10 border border-terracotta/20 px-3 py-1.5 rounded-full capitalize">
+              {plant.plant_type}
+            </span>
+          )}
+          {plant.sun && (
+            <span className="inline-flex items-center gap-1.5 text-sm bg-amber-50 text-amber-800 px-3 py-1.5 rounded-full border border-amber-200">
+              {SUN_ICONS[plant.sun]} {plant.sun}
+            </span>
+          )}
+          {plant.water && (
+            <span className="inline-flex items-center gap-1.5 text-sm bg-teal-50 text-teal-800 px-3 py-1.5 rounded-full border border-teal-200">
+              {WATER_ICONS[plant.water]} {plant.water} water
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Description */}
+      {plant.description && (
+        <p className="text-warm-umber text-base leading-relaxed mb-8">{plant.description}</p>
+      )}
+
+      <hr className="border-warm-stone/20 mb-8" />
 
       {/* Plant Overview */}
       {overviewCells.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Plant Overview</h2>
+          <h2 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-4">Plant Overview</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {overviewCells.map(cell => (
               <InfoCell key={cell.label} label={cell.label} value={cell.value} />
@@ -109,15 +135,10 @@ export default async function PlantDetailPage({ params }: { params: { id: string
         </section>
       )}
 
-      {/* Description */}
-      {plant.description && (
-        <p className="text-gray-600 leading-relaxed mb-8">{plant.description}</p>
-      )}
-
       {/* Landscaping */}
       {landscapingCells.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Landscaping</h2>
+          <h2 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-4">Landscaping</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {landscapingCells.map(cell => (
               <InfoCell key={cell.label} label={cell.label} value={cell.value} />
@@ -129,16 +150,16 @@ export default async function PlantDetailPage({ params }: { params: { id: string
       {/* Permaculture */}
       {(plant.forest_garden_layer || plant.permaculture_uses?.length) && (
         <section>
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Permaculture</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-            {plant.forest_garden_layer && (
+          <h2 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-4">Permaculture</h2>
+          {plant.forest_garden_layer && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
               <InfoCell label="Forest Garden Layer" value={plant.forest_garden_layer} />
-            )}
-          </div>
+            </div>
+          )}
           {plant.permaculture_uses?.length && (
             <div className="flex flex-wrap gap-2">
               {plant.permaculture_uses.map((use: string) => (
-                <span key={use} className="text-xs bg-green-50 text-green-800 px-3 py-1.5 rounded-full border border-green-100 capitalize">
+                <span key={use} className="text-xs bg-terracotta/10 text-terracotta px-3 py-1.5 rounded-full border border-terracotta/20 capitalize">
                   {use}
                 </span>
               ))}
@@ -146,6 +167,8 @@ export default async function PlantDetailPage({ params }: { params: { id: string
           )}
         </section>
       )}
+        </div>{/* end padding */}
+      </div>{/* end card */}
     </div>
   )
 }
