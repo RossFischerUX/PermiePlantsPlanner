@@ -20,12 +20,24 @@ npx playwright test  # run E2E tests (hits production URL)
 ```
 
 ## Architecture
-- `app/` — all pages and page-specific components (App Router)
+- `app/layout.tsx` — root layout: HTML shell, fonts, globals only (no nav/footer)
+- `app/(app)/` — route group for all app pages that need nav + footer
+  - `app/(app)/layout.tsx` — sticky nav + footer, fetches auth user
+  - `app/(app)/NavUser.tsx` — client component for user menu / sign-out
+  - `app/(app)/page.tsx` — home / landing page
+  - `app/(app)/plants/` — plant browser and detail pages
+  - `app/(app)/auth/` — login, signup, signout pages
+  - `app/(app)/lists/` — My Lists dashboard and list editor
+- `app/presents/` — public shareable pages, **outside (app) group** — no nav/footer by design (client-facing)
+  - `app/presents/[shareId]/page.tsx` — plant grid presentation
+  - `app/presents/[shareId]/reports/page.tsx` — water/bloom/season tables
 - `lib/` — shared types (`types.ts`) and Supabase helpers
   - `lib/supabase/server.ts` — server components / route handlers
   - `lib/supabase/client.ts` — browser / client components
 - `scripts/` — data import/enrichment pipelines (excluded from TS build)
 - `supabase/migrations/` — ordered SQL migrations
+
+**Route groups:** The `(app)` folder name is invisible to the URL router. Adding new pages that need the nav/footer goes in `app/(app)/`. Pages that should be standalone (e.g. future embed views) go at `app/` root level like `presents/`.
 
 **Server vs. Client split:** Use `lib/supabase/server.ts` in RSCs and Server Actions; use `lib/supabase/client.ts` only in `'use client'` components.
 
@@ -52,13 +64,37 @@ ANTHROPIC_API_KEY=           # scripts only
 - Tests run against the **production** Vercel URL — be careful with destructive ops
 - Auth state cached at `tests/.auth-state.json`
 
+## Design System — Botanical Heritage
+All UI uses the **Botanical Heritage** design system. Do not introduce gray/green Tailwind defaults; use these tokens exclusively:
+
+| Token | Value | Role |
+|---|---|---|
+| `parchment` | `#f5f0e8` | Page background |
+| `cream` | `#fdfaf4` | Card / panel surface |
+| `stone-white` | `#f0ebe0` | Filter sidebar, table headers |
+| `forest` | `#2d5016` | Primary buttons, active states, links |
+| `forest-dark` | `#173901` | Hover on primary |
+| `terracotta` | `#c4622d` | Destructive / accent (remove buttons, hover highlights) |
+| `warm-stone` | `#8c7b6b` | Borders (use at 20–30% opacity), secondary text |
+| `dark-bark` | `#1c1207` | Headings, high-emphasis text |
+| `warm-umber` | `#5c4a35` | Body text, latin names, metadata |
+| `sage-mist` | `#a8d38a` | Light accent, gradient fills |
+
+**Shadows:** `shadow-warm` (resting) → `shadow-warm-md` (hover). Always warm-tinted, never cool gray.
+
+**Typography:** `font-playfair` for all headings, plant names, section titles. `font-inter` (default body) for all UI labels, buttons, metadata.
+
+**Shape language:** `rounded-2xl` (16px) for cards/images, `rounded-lg` (8px) for buttons/inputs, `rounded-full` for badges/pills.
+
+**Reference:** Full spec in [.stitch/DESIGN.md](.stitch/DESIGN.md). Stitch project ID: `7515704749920381908`. Design screenshots in [.stitch/designs/](.stitch/designs/).
+
 ## Code Conventions
 - TypeScript strict mode; no `any` unless unavoidable
 - Path alias `@/*` maps to project root
 - No Prettier config — rely on `next lint` for style checks
 - No comments unless the WHY is non-obvious
-- Tailwind inline classes preferred over custom CSS; use CSS variables for theme tokens (`--background`, `--foreground`)
-- Supabase image CDN and Wikimedia are the only allowed remote image hosts (configured in `next.config.mjs`)
+- Tailwind inline classes preferred over custom CSS
+- Allowed remote image hosts (configured in `next.config.mjs`): `upload.wikimedia.org`, `*.supabase.co`, `inaturalist-open-data.s3.amazonaws.com`, `static.inaturalist.org` — adding a new image source requires adding it here or Next.js will 500 at SSR time on Server Components
 
 ## Data Import Scripts
 Scripts in `scripts/` use `tsx` directly and are excluded from the Next.js TS build:
@@ -72,9 +108,13 @@ npm run fix-images           # validate/fix image URLs
 Rate-limited to 10 Claude API calls per 15s — don't remove the delay.
 
 ## Key Files
-- [app/layout.tsx](app/layout.tsx) — root layout, Nav, global auth
+- [app/layout.tsx](app/layout.tsx) — root layout: HTML/body/fonts only
+- [app/(app)/layout.tsx](app/(app)/layout.tsx) — nav + footer for all app pages
+- [app/(app)/NavUser.tsx](app/(app)/NavUser.tsx) — auth-aware user menu
 - [lib/types.ts](lib/types.ts) — Plant, PlantList, PlantListItem interfaces
 - [lib/supabase/server.ts](lib/supabase/server.ts) — server Supabase client
 - [lib/supabase/client.ts](lib/supabase/client.ts) — browser Supabase client
 - [next.config.mjs](next.config.mjs) — image host allowlist
+- [tailwind.config.ts](tailwind.config.ts) — Botanical Heritage color tokens + shadows
+- [.stitch/DESIGN.md](.stitch/DESIGN.md) — full Botanical Heritage design system spec
 - [playwright.config.ts](playwright.config.ts) — E2E config
