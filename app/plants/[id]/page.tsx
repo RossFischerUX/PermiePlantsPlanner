@@ -116,13 +116,34 @@ export default async function PlantDetailPage({ params }: { params: { id: string
 
       {/* Landscaping */}
       {landscapingCells.length > 0 && (
-        <section>
+        <section className="mb-8">
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Landscaping</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {landscapingCells.map(cell => (
               <InfoCell key={cell.label} label={cell.label} value={cell.value} />
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Permaculture */}
+      {(plant.forest_garden_layer || plant.permaculture_uses?.length) && (
+        <section>
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Permaculture</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+            {plant.forest_garden_layer && (
+              <InfoCell label="Forest Garden Layer" value={plant.forest_garden_layer} />
+            )}
+          </div>
+          {plant.permaculture_uses?.length && (
+            <div className="flex flex-wrap gap-2">
+              {plant.permaculture_uses.map(use => (
+                <span key={use} className="text-xs bg-green-50 text-green-800 px-3 py-1.5 rounded-full border border-green-100 capitalize">
+                  {use}
+                </span>
+              ))}
+            </div>
+          )}
         </section>
       )}
     </div>
