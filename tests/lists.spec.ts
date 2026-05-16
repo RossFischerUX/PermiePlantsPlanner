@@ -113,11 +113,11 @@ test.describe('List editor', () => {
   test('cancel on remove confirm keeps plant count unchanged', async ({ page }) => {
     const { listId } = getTestIds()
     await page.goto(`/lists/${listId}`)
-    await page.waitForSelector('button:has-text("Remove")')
-    const countBefore = await page.getByRole('button', { name: 'Remove' }).count()
+    await page.waitForSelector('button[aria-label="Remove"]')
+    const countBefore = await page.locator('button[aria-label="Remove"]').count()
     page.once('dialog', dialog => dialog.dismiss())
-    await page.getByRole('button', { name: 'Remove' }).first().click()
-    const countAfter = await page.getByRole('button', { name: 'Remove' }).count()
+    await page.locator('button[aria-label="Remove"]').first().click()
+    const countAfter = await page.locator('button[aria-label="Remove"]').count()
     expect(countAfter).toBe(countBefore)
   })
 
