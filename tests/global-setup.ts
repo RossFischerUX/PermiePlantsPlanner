@@ -6,7 +6,7 @@ import * as dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.test.local' })
 
-const BASE_URL = 'https://plantmaster-clone.vercel.app'
+const BASE_URL = 'https://permacultureplantpicker.com'
 const SUPABASE_URL = 'https://kbpoxnrlfrjdegfpcyav.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImticG94bnJsZnJqZGVnZnBjeWF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzEyMDgsImV4cCI6MjA5MjMwNzIwOH0.PTIFN8CZ2QOpJ8ttT-2ij8DB4KmIMiYEkz2Rvbp8a74'
 

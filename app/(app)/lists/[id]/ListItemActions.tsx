@@ -21,6 +21,7 @@ export default function ListItemActions({ itemId, listId }: { itemId: string; li
     <button
       onClick={handleRemove}
       disabled={loading}
+      aria-label="Remove"
       className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg text-warm-stone/50 hover:text-terracotta hover:bg-terracotta/10 transition-colors disabled:opacity-40 text-xl leading-none"
     >
       {loading ? '…' : '×'}

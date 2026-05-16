@@ -6,7 +6,7 @@ export default defineConfig({
   retries: 1,
   reporter: 'list',
   use: {
-    baseURL: 'https://plantmaster-clone.vercel.app',
+    baseURL: 'https://permacultureplantpicker.com',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },

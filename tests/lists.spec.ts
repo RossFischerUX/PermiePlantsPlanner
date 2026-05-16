@@ -49,7 +49,7 @@ test.describe('My Lists page', () => {
     await page.fill('input[placeholder*="List name"]', title)
     await page.click('button:has-text("Create list")')
     // Target card-level divs (bg-white rounded-2xl) filtered by unique timestamp title
-    const card = page.locator('div.bg-white.rounded-2xl').filter({ hasText: title })
+    const card = page.locator('div.bg-cream.rounded-2xl').filter({ hasText: title })
     await expect(card.getByText('0 plants')).toBeVisible({ timeout: 10000 })
   })
 
@@ -94,9 +94,9 @@ test.describe('List editor', () => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
     const { listId } = getTestIds()
     await page.goto(`/lists/${listId}`)
-    await page.getByText('🔗 Copy share link').click()
+    await page.getByText('⎘ Copy share link').click()
     await expect(page.getByText('✓ Copied!')).toBeVisible({ timeout: 5000 })
-    await expect(page.getByText('🔗 Copy share link')).toBeVisible({ timeout: 4000 })
+    await expect(page.getByText('⎘ Copy share link')).toBeVisible({ timeout: 4000 })
   })
 
   test('"View presentation ↗" opens new tab at /presents/', async ({ page, context }) => {
