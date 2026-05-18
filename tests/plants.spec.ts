@@ -128,6 +128,90 @@ test.describe('Plant browser — public', () => {
     expect(filteredCount).toBeGreaterThan(0)
     expect(filteredCount).toBeLessThan(initialCount)
   })
+
+  test('restores filter state from URL on direct navigation', async ({ page }) => {
+    await page.goto('/plants?sun=full+sun')
+    await page.waitForSelector('p:has-text("Showing")', { timeout: 20000 })
+    await page.locator('aside button').filter({ hasText: 'Sun' }).click()
+    await expect(
+      page.locator('aside label').filter({ hasText: 'full sun' }).locator('input[type="checkbox"]')
+    ).toBeChecked()
+  })
+
+  test('initial load shows exactly 24 plant cards when total > 24', async ({ page }) => {
+    await page.goto('/plants')
+    await page.waitForSelector('p:has-text("Showing")', { timeout: 20000 })
+    const total = await getFilteredCount(page)
+    test.skip(total <= 24, 'Total plant count is ≤ 24 — page size test not applicable')
+    const cards = page.locator('.bg-cream.rounded-2xl')
+    expect(await cards.count()).toBe(24)
+  })
+
+  test('filter change does not download full catalog', async ({ page }) => {
+    let requestCount = 0
+    let maxBytes = 0
+    page.on('response', async (r) => {
+      if (r.url().includes('/rest/v1/plants')) {
+        requestCount++
+        const b = await r.body()
+        maxBytes = Math.max(maxBytes, b.length)
+      }
+    })
+    await page.goto('/plants')
+    await page.waitForSelector('p:has-text("Showing")', { timeout: 20000 })
+    requestCount = 0
+    maxBytes = 0
+    await page.locator('aside button').filter({ hasText: 'Sun' }).click()
+    await page.locator('aside label').filter({ hasText: 'full sun' }).locator('input[type="checkbox"]').check()
+    await page.waitForSelector('p:has-text("Showing")')
+    expect(requestCount).toBeLessThanOrEqual(2)
+    expect(maxBytes).toBeLessThan(50_000)
+  })
+
+  test('"Load more plants" appends 24 more cards', async ({ page }) => {
+    await page.goto('/plants')
+    await page.waitForSelector('p:has-text("Showing")', { timeout: 20000 })
+    const total = await getFilteredCount(page)
+    test.skip(total <= 24, 'Total plant count is ≤ 24 — load more test not applicable')
+    expect(await page.locator('.bg-cream.rounded-2xl').count()).toBe(24)
+    await page.getByRole('button', { name: 'Load more plants' }).click()
+    await expect(page.locator('.bg-cream.rounded-2xl')).toHaveCount(48, { timeout: 15000 })
+  })
+
+  test('"Load more plants" button absent when all results are shown', async ({ page }) => {
+    await page.goto('/plants')
+    await page.waitForSelector('p:has-text("Showing")', { timeout: 20000 })
+    await page.locator('aside button').filter({ hasText: 'Type' }).click()
+    await page.locator('aside label').filter({ hasText: /^vine/ }).locator('input[type="checkbox"]').check()
+    await page.waitForSelector('p:has-text("Showing")')
+    const filteredCount = await getFilteredCount(page)
+    if (filteredCount <= 24) {
+      expect(await page.getByRole('button', { name: 'Load more plants' }).count()).toBe(0)
+    }
+  })
+
+  test('applying filter after load more shows only first page of filtered results', async ({ page }) => {
+    await page.goto('/plants')
+    await page.waitForSelector('p:has-text("Showing")', { timeout: 20000 })
+    const total = await getFilteredCount(page)
+    test.skip(total <= 24, 'Total plant count is ≤ 24 — filter-reset test not applicable')
+    await page.getByRole('button', { name: 'Load more plants' }).click()
+    await expect(page.locator('.bg-cream.rounded-2xl')).toHaveCount(48, { timeout: 15000 })
+    await page.locator('aside button').filter({ hasText: 'Sun' }).click()
+    await page.locator('aside label').filter({ hasText: 'full sun' }).locator('input[type="checkbox"]').check()
+    await page.waitForSelector('p:has-text("Showing")')
+    expect(await page.locator('.bg-cream.rounded-2xl').count()).toBeLessThanOrEqual(24)
+  })
+
+  test('active filter chip appears above results grid when filter applied', async ({ page }) => {
+    await page.goto('/plants')
+    await page.waitForSelector('p:has-text("Showing")', { timeout: 20000 })
+    await page.locator('aside button').filter({ hasText: 'Sun' }).click()
+    await page.locator('aside label').filter({ hasText: 'full sun' }).locator('input[type="checkbox"]').check()
+    await page.waitForSelector('p:has-text("Showing")')
+    const chipsAbove = page.locator('main, div').filter({ hasNot: page.locator('aside') }).getByRole('button').filter({ hasText: /full sun/i })
+    await expect(chipsAbove.first()).toBeVisible()
+  })
 })
 
 test.describe('Plant browser — logged in', () => {
