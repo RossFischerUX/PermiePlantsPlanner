@@ -47,7 +47,11 @@ npx playwright test  # run E2E tests (hits production URL)
 
 ## Database (Supabase / PostgreSQL)
 Three tables with RLS:
-- `plants` — master catalog, readable by everyone
+- `plants` — master catalog, readable by everyone. Key extended columns:
+  - `usda_zone_min`, `usda_zone_max` — half-zone integers (9a=18, 9b=19); encode via `lib/zones.ts`. "Zone 9" = `[2, 19]` (zones 1a–9b ceiling semantics, not a point value).
+  - `native_states` — `TEXT[]`, e.g. `['CA','OR']`; used for state filter
+  - `is_invasive` — `BOOLEAN`; shown as badge on detail page
+  - `notable_cultivars` — `TEXT`; shown as section on detail page
 - `plant_lists` — user-owned lists, public via `share_id`
 - `plant_list_items` — join table with sort_order and notes
 
@@ -67,6 +71,13 @@ ANTHROPIC_API_KEY=           # scripts only
 - Two suites: `logged-in` (uses stored auth state) and `logged-out`
 - Tests run against the **production** Vercel URL — be careful with destructive ops
 - Auth state cached at `tests/.auth-state.json`
+
+**Playwright gotchas:**
+- **Footer link ambiguity:** `app/(app)/layout.tsx` footer always renders "Sign Up", "Sign In", and "My Lists" links regardless of auth state. Scope assertions to `nav` (e.g. `page.locator('nav').getByRole('link', { name: 'Sign up' })`) or `p` for form-footer links — never bare `page.getByRole`.
+- **Overflow sidebar:** The plant browser sidebar is `overflow-y-auto max-h-[calc(100vh-7rem)]`. Elements near the bottom (USDA Zone, Native State) need `await element.scrollIntoViewIfNeeded()` before `.click()` or `.selectOption()`.
+- **Filter sections start collapsed:** Click the `aside button` header before interacting with checkboxes inside a `FilterSection`.
+- **Active tab class:** `text-forest border-b-2 border-forest` — assert with `toHaveClass(/text-forest/)`.
+- **Plant cards:** `.bg-cream.rounded-2xl` — not `.border-gray-100`.
 
 ## Design System — Botanical Heritage
 All UI uses the **Botanical Heritage** design system. Do not introduce gray/green Tailwind defaults; use these tokens exclusively:
@@ -103,11 +114,14 @@ All UI uses the **Botanical Heritage** design system. Do not introduce gray/gree
 ## Data Import Scripts
 Scripts in `scripts/` use `tsx` directly and are excluded from the Next.js TS build:
 ```bash
-npm run import-plants        # bulk import via iNaturalist + Claude
-npm run import-permaculture  # permaculture-specific batch
-npm run update-plants        # re-enrich existing records
-npm run retry-plants         # retry skipped records
-npm run fix-images           # validate/fix image URLs
+npm run import-plants           # bulk import via iNaturalist + Claude
+npm run import-permaculture     # permaculture-specific batch
+npm run update-plants           # re-enrich existing records
+npm run retry-plants            # retry skipped records
+npm run fix-images              # validate/fix image URLs
+npm run backfill-zones          # parse usda_zones text → usda_zone_min/max integers (idempotent)
+npm run backfill-native-states  # Claude-inferred native_states arrays (idempotent)
+npm run backfill-native-counties  # Flora API county data — needs FLORA_API_KEY (deferred)
 ```
 Rate-limited to 10 Claude API calls per 15s — don't remove the delay.
 
@@ -116,6 +130,7 @@ Rate-limited to 10 Claude API calls per 15s — don't remove the delay.
 - [app/(app)/layout.tsx](app/(app)/layout.tsx) — nav + footer for all app pages
 - [app/(app)/NavUser.tsx](app/(app)/NavUser.tsx) — auth-aware user menu
 - [lib/types.ts](lib/types.ts) — Plant, PlantList, PlantListItem interfaces
+- [lib/zones.ts](lib/zones.ts) — encodeZone / decodeZone / ZONE_LABELS (half-zone integer helpers)
 - [lib/supabase/server.ts](lib/supabase/server.ts) — server Supabase client
 - [lib/supabase/client.ts](lib/supabase/client.ts) — browser Supabase client
 - [next.config.mjs](next.config.mjs) — image host allowlist
