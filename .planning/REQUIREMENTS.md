@@ -7,8 +7,8 @@
 
 ### Performance & Architecture
 
-- [ ] **PERF-01**: Plant browser filter state lives in the URL (shareable, bookmarkable, RSC-compatible) via nuqs
-- [ ] **PERF-02**: Plant catalog is fetched server-side with pagination and server-applied filters — no full client-side load
+- [x] **PERF-01**: Plant browser filter state lives in the URL (shareable, bookmarkable, RSC-compatible) via nuqs
+- [x] **PERF-02**: Plant catalog is fetched server-side with pagination and server-applied filters — no full client-side load
 
 ### Plant Functional Data
 
@@ -81,8 +81,8 @@ Deferred to next milestone. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PERF-01 | Phase 1 | Pending |
-| PERF-02 | Phase 1 | Pending |
+| PERF-01 | Phase 1 | Complete |
+| PERF-02 | Phase 1 | Complete |
 | DATA-01 | Phase 2 | Pending |
 | DATA-02 | Phase 2 | Pending |
 | DATA-03 | Phase 2 | Pending |
