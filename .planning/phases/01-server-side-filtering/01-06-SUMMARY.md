@@ -114,9 +114,18 @@ None. All data flows are wired: initialPlants from Supabase, totalCount from COU
 
 None. No new trust boundaries introduced. buildPlantsQuery is accessed only from RSC page and Server Action (both server-side). PlantsGrid is a client component that calls the Server Action — matching the existing architecture.
 
+## Post-Checkpoint Fix
+
+**Checkpoint approved with one issue:** Browser scroll position did not reset to top when a filter change remounted PlantsGrid via the `key` prop.
+
+**Fix applied (commit 078a135):** Added `useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }) }, [])` to PlantsGrid.tsx. Since PlantsGrid remounts on every filter change (via `key={JSON.stringify(params)}`), this effect fires on each filter change and immediately scrolls the user back to the top of the plant list. `behavior: 'instant'` was used (not 'smooth') so the scroll completes before the user sees the new results.
+
+TypeScript and production build both passed after the fix.
+
 ## Self-Check: PASSED
 
 - PlantsGrid.tsx: FOUND
 - queryBuilder.ts: FOUND
 - page.tsx: FOUND
 - Commit 674418c: FOUND
+- Post-checkpoint fix commit 078a135: FOUND
