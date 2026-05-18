@@ -11,7 +11,7 @@ test.describe('Navigation — logged out', () => {
     await page.goto('/')
     await expect(page.getByRole('link', { name: 'Log in' })).toBeVisible()
     await expect(page.locator('nav').getByRole('link', { name: 'Sign up' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'My Lists' })).not.toBeVisible()
+    await expect(page.locator('nav').getByRole('link', { name: 'My Lists' })).not.toBeVisible()
   })
 })
 
@@ -28,7 +28,7 @@ test.describe('Login page', () => {
     await page.fill('input[type="email"]', EMAIL)
     await page.fill('input[type="password"]', 'wrongpassword!')
     await page.click('button[type="submit"]')
-    await expect(page.locator('p.text-red-500')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('p.text-red-600')).toBeVisible({ timeout: 10000 })
   })
 
   test('sign in link navigates to signup page', async ({ page }) => {
