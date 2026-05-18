@@ -33,12 +33,24 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 6 plans
 
 Plans:
+**Wave 1** *(run in parallel — no dependencies)*
 - [ ] 01-01-PLAN.md — Wave 0 tests: add 7 new Playwright test cases for PERF-01/PERF-02 behaviors
 - [ ] 01-02-PLAN.md — Foundation: install nuqs, NuqsAdapter, lib/plant-labels.ts, searchParams.ts
+
+**Wave 2** *(blocked on Wave 1 / 01-02 completion)*
 - [ ] 01-03-PLAN.md — Component extraction: FilterSection, PlantCard, PlantCardSkeleton
 - [ ] 01-04-PLAN.md — Server layer: actions.ts with buildPlantsQuery + fetchMorePlants Server Action
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 01-05-PLAN.md — Client islands: FilterControls, ActiveFilterChips, PlantsFilterSidebar
+
+**Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 01-06-PLAN.md — RSC rewrite: PlantsGrid + page.tsx as RSC (walking skeleton complete)
+
+**Cross-cutting constraints:**
+- nuqs `shallow: false` required on every `useQueryState` hook (RSC re-execution depends on it)
+- Botanical Heritage design tokens exclusively — no gray/green Tailwind defaults
+- TypeScript strict, no `any`; server.ts in RSCs, client.ts in `'use client'` components
 
 **UI hint**: yes
 
