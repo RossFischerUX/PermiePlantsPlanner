@@ -20,12 +20,17 @@ export interface Plant {
   plant_type: PlantType | null
   image_url: string | null
   native_range: string | null
+  native_states: string[] | null
   usda_zones: string | null
+  usda_zone_min: number | null
+  usda_zone_max: number | null
   form: string | null
   growth_rate: string | null
   dormancy: string | null
   forest_garden_layer: ForestGardenLayer | null
   permaculture_uses: string[] | null
+  notable_cultivars: string | null
+  is_invasive: boolean
   created_at: string
 }
 

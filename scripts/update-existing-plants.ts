@@ -50,6 +50,8 @@ interface HorticulturalData {
   description: string | null
   native_range: string | null
   usda_zones: string | null
+  usda_zone_min: string | null
+  usda_zone_max: string | null
 }
 
 interface PlantRow {
@@ -72,6 +74,19 @@ function sleep(ms: number) {
 const VALID_SUN = ['full sun', 'part shade', 'full shade'] as const
 const VALID_WATER = ['low', 'moderate', 'high'] as const
 const VALID_TYPE = ['shrub', 'tree', 'perennial', 'groundcover', 'vine', 'grass'] as const
+
+function encodeZone(label: string): number | null {
+  const match = label.trim().toLowerCase().match(/^(\d+)([ab])?$/)
+  if (!match) return null
+  const major = parseInt(match[1], 10)
+  if (major < 1 || major > 13) return null
+  return major * 2 + (match[2] === 'b' ? 1 : 0)
+}
+
+function encodeZoneLabel(label: string | null | undefined): number | null {
+  if (!label) return null
+  return encodeZone(label)
+}
 
 function normalizeEnum<T extends string>(value: unknown, allowed: readonly T[]): T | null {
   if (typeof value !== 'string') return null
@@ -104,7 +119,9 @@ async function enrichWithClaude(commonName: string, latinName: string): Promise<
   "soil": short string e.g. "Well-drained" or "Moist, fertile" | null,
   "description": "1–2 sentence plain-English description for a home gardener" | null,
   "native_range": short string e.g. "California native" or "Mediterranean" or "Eastern Asia" | null,
-  "usda_zones": string e.g. "7–10" or "4–8" | null
+  "usda_zones": string e.g. "7–10" or "4–8" | null,
+  "usda_zone_min": half-zone label e.g. "3a" or "7b" | null,
+  "usda_zone_max": half-zone label e.g. "10b" or "11a" | null
 }`,
         },
       ],
@@ -189,6 +206,8 @@ async function main() {
             description: hort.description ?? null,
             native_range: hort.native_range ?? null,
             usda_zones: hort.usda_zones ?? null,
+            usda_zone_min: encodeZoneLabel(hort.usda_zone_min),
+            usda_zone_max: encodeZoneLabel(hort.usda_zone_max),
           })
           .eq('id', plant.id)
 

@@ -26,7 +26,7 @@ npx playwright test  # run E2E tests (hits production URL)
   - `app/(app)/NavUser.tsx` — client component for user menu / sign-out
   - `app/(app)/page.tsx` — home / landing page
   - `app/(app)/plants/` — plant browser and detail pages
-  - `app/(app)/auth/` — login, signup, signout pages
+  - `app/(app)/auth/` — login, signup, signout, forgot-password, reset-password pages
   - `app/(app)/lists/` — My Lists dashboard and list editor
 - `app/presents/` — public shareable pages, **outside (app) group** — no nav/footer by design (client-facing)
   - `app/presents/[shareId]/page.tsx` — plant grid presentation
@@ -34,12 +34,16 @@ npx playwright test  # run E2E tests (hits production URL)
 - `lib/` — shared types (`types.ts`) and Supabase helpers
   - `lib/supabase/server.ts` — server components / route handlers
   - `lib/supabase/client.ts` — browser / client components
+- `app/api/auth/callback/` — Supabase auth callback route (exchanges token_hash or PKCE code for session)
 - `scripts/` — data import/enrichment pipelines (excluded from TS build)
 - `supabase/migrations/` — ordered SQL migrations
+- `supabase/templates/` — branded HTML email templates (confirmation, recovery)
 
 **Route groups:** The `(app)` folder name is invisible to the URL router. Adding new pages that need the nav/footer goes in `app/(app)/`. Pages that should be standalone (e.g. future embed views) go at `app/` root level like `presents/`.
 
 **Server vs. Client split:** Use `lib/supabase/server.ts` in RSCs and Server Actions; use `lib/supabase/client.ts` only in `'use client'` components.
+
+**Supabase email auth:** Always use `token_hash` + `verifyOtp` for email link flows (password reset, etc.) — not PKCE `code`/`exchangeCodeForSession`. PKCE requires a `code_verifier` cookie from the originating browser; opening the link in a different browser fails with `otp_expired`. Email templates must use `{{ .TokenHash }}` not `{{ .ConfirmationURL }}` for recovery links. Chrome Safe Browsing also prefetches email URLs, which silently consumes single-use PKCE tokens.
 
 ## Database (Supabase / PostgreSQL)
 Three tables with RLS:
@@ -118,3 +122,5 @@ Rate-limited to 10 Claude API calls per 15s — don't remove the delay.
 - [tailwind.config.ts](tailwind.config.ts) — Botanical Heritage color tokens + shadows
 - [.stitch/DESIGN.md](.stitch/DESIGN.md) — full Botanical Heritage design system spec
 - [playwright.config.ts](playwright.config.ts) — E2E config
+- [app/api/auth/callback/route.ts](app/api/auth/callback/route.ts) — auth callback: token_hash + PKCE exchange
+- [supabase/templates/](supabase/templates/) — branded email templates

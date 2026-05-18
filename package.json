@@ -11,7 +11,10 @@
     "update-plants": "tsx scripts/update-existing-plants.ts",
     "retry-plants": "tsx scripts/retry-skipped-plants.ts",
     "import-permaculture": "tsx scripts/import-permaculture-plants.ts",
-    "fix-images": "tsx scripts/fix-plant-images.ts"
+    "fix-images": "tsx scripts/fix-plant-images.ts",
+    "backfill-zones": "tsx scripts/backfill-usda-zones.ts",
+    "backfill-native-states": "tsx scripts/backfill-native-states.ts",
+    "backfill-native-counties": "tsx scripts/backfill-native-counties.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

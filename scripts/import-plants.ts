@@ -66,16 +66,18 @@ interface HorticulturalData {
   form: string | null
   growth_rate: 'slow' | 'moderate' | 'fast' | null
   dormancy: 'evergreen' | 'deciduous' | 'semi-evergreen' | null
-  height_min: number | null           // feet
-  height_max: number | null           // feet
-  width_min: number | null            // feet
-  width_max: number | null            // feet
-  bloom_months: string[] | null       // e.g. ["March", "April", "May"]
-  season_of_interest: string[] | null // e.g. ["Spring", "Winter"]
+  height_min: number | null
+  height_max: number | null
+  width_min: number | null
+  width_max: number | null
+  bloom_months: string[] | null
+  season_of_interest: string[] | null
   soil: string | null
   description: string | null
   native_range: string | null
   usda_zones: string | null
+  usda_zone_min: string | null  // half-zone label e.g. "7a", "9b"
+  usda_zone_max: string | null
 }
 
 // ─── Clients ─────────────────────────────────────────────────────────────────
@@ -96,6 +98,20 @@ function sleep(ms: number) {
 const VALID_SUN = ['full sun', 'part shade', 'full shade'] as const
 const VALID_WATER = ['low', 'moderate', 'high'] as const
 const VALID_TYPE = ['shrub', 'tree', 'perennial', 'groundcover', 'vine', 'grass'] as const
+
+// Half-zone encoding: N_a = N*2, N_b = N*2+1 (e.g. 9a=18, 9b=19)
+function encodeZone(label: string): number | null {
+  const match = label.trim().toLowerCase().match(/^(\d+)([ab])?$/)
+  if (!match) return null
+  const major = parseInt(match[1], 10)
+  if (major < 1 || major > 13) return null
+  return major * 2 + (match[2] === 'b' ? 1 : 0)
+}
+
+function encodeZoneLabel(label: string | null | undefined): number | null {
+  if (!label) return null
+  return encodeZone(label)
+}
 
 function normalizeEnum<T extends string>(
   value: unknown,
@@ -155,7 +171,9 @@ async function enrichWithClaude(
   "soil": short string e.g. "Well-drained" or "Moist, fertile" | null,
   "description": "1–2 sentence plain-English description for a home gardener" | null,
   "native_range": short string e.g. "California native" or "Mediterranean" or "Eastern Asia" | null,
-  "usda_zones": string e.g. "7–10" or "4–8" | null
+  "usda_zones": string e.g. "7–10" or "4–8" | null,
+  "usda_zone_min": half-zone label e.g. "3a" or "7b" | null,
+  "usda_zone_max": half-zone label e.g. "10b" or "11a" | null
 }`,
         },
       ],
@@ -270,6 +288,8 @@ async function main() {
           description: hort.description ?? null,
           native_range: hort.native_range ?? null,
           usda_zones: hort.usda_zones ?? null,
+          usda_zone_min: encodeZoneLabel(hort.usda_zone_min),
+          usda_zone_max: encodeZoneLabel(hort.usda_zone_max),
         }
       }),
     )

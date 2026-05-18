@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, Suspense, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Plant, PlantList } from '@/lib/types'
+import { ZONE_LABELS, encodeZone } from '@/lib/zones'
+import { US_STATES } from '@/lib/us-states'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -233,6 +235,8 @@ function PlantsPageInner() {
   const [growthRate, setGrowthRate] = useState<string[]>(split(searchParams.get('growthRate')))
   const [layers, setLayers] = useState<string[]>(split(searchParams.get('layers')))
   const [permUses, setPermUses] = useState<string[]>(split(searchParams.get('permUses')))
+  const [zones, setZones] = useState<string[]>(split(searchParams.get('zones')))
+  const [nativeState, setNativeState] = useState(searchParams.get('state') ?? '')
 
   const [createModalPlantId, setCreateModalPlantId] = useState<string | null>(null)
   const [newListName, setNewListName] = useState('')
@@ -252,9 +256,11 @@ function PlantsPageInner() {
     if (growthRate.length) params.set('growthRate', growthRate.join(','))
     if (layers.length) params.set('layers', layers.join(','))
     if (permUses.length) params.set('permUses', permUses.join(','))
+    if (zones.length) params.set('zones', zones.join(','))
+    if (nativeState) params.set('state', nativeState)
     const qs = params.toString()
     router.replace(qs ? `/plants?${qs}` : '/plants', { scroll: false })
-  }, [search, sun, water, types, months, dormancy, growthRate, layers, permUses, router])
+  }, [search, sun, water, types, months, dormancy, growthRate, layers, permUses, zones, nativeState, router])
 
   useEffect(() => {
     async function load() {
@@ -294,8 +300,20 @@ function PlantsPageInner() {
     if (growthRate.length) result = result.filter(p => p.growth_rate && growthRate.includes(p.growth_rate))
     if (layers.length) result = result.filter(p => p.forest_garden_layer && layers.includes(p.forest_garden_layer))
     if (permUses.length) result = result.filter(p => permUses.every(u => p.permaculture_uses?.includes(u)))
+    if (zones.length) {
+      const encoded = zones.map(z => encodeZone(z)).filter((n): n is number => n !== null)
+      if (encoded.length > 0) {
+        result = result.filter(p => {
+          if (p.usda_zone_min === null || p.usda_zone_max === null) return false
+          return encoded.some(z => p.usda_zone_min! <= z && z <= p.usda_zone_max!)
+        })
+      }
+    }
+    if (nativeState) {
+      result = result.filter(p => p.native_states?.includes(nativeState))
+    }
     setFiltered(result)
-  }, [plants, search, sun, water, types, months, dormancy, growthRate, layers, permUses])
+  }, [plants, search, sun, water, types, months, dormancy, growthRate, layers, permUses, zones, nativeState])
 
   useEffect(() => { applyFilters(); setPage(0) }, [applyFilters])
 
@@ -348,11 +366,14 @@ function PlantsPageInner() {
   }
 
   const hasFilters = !!(search || sun.length || water.length || types.length || months.length ||
-    dormancy.length || growthRate.length || layers.length || permUses.length)
+    dormancy.length || growthRate.length || layers.length || permUses.length || zones.length || nativeState)
 
   const activeFilterCount =
     sun.length + water.length + types.length + months.length +
-    dormancy.length + growthRate.length + layers.length + permUses.length
+    dormancy.length + growthRate.length + layers.length + permUses.length +
+    zones.length + (nativeState ? 1 : 0)
+
+  const nativeStateName = US_STATES.find(s => s.code === nativeState)?.name ?? nativeState
 
   const activePills = [
     ...sun.map(v => ({ label: v, clear: () => toggle(sun, v, setSun) })),
@@ -363,11 +384,14 @@ function PlantsPageInner() {
     ...growthRate.map(v => ({ label: v, clear: () => toggle(growthRate, v, setGrowthRate) })),
     ...layers.map(v => ({ label: v, clear: () => toggle(layers, v, setLayers) })),
     ...permUses.map(v => ({ label: v, clear: () => toggle(permUses, v, setPermUses) })),
+    ...zones.map(v => ({ label: `Zone ${v}`, clear: () => toggle(zones, v, setZones) })),
+    ...(nativeState ? [{ label: `Native to ${nativeStateName}`, clear: () => setNativeState('') }] : []),
   ]
 
   function clearAll() {
     setSearch(''); setSun([]); setWater([]); setTypes([]); setMonths([])
     setDormancy([]); setGrowthRate([]); setLayers([]); setPermUses([])
+    setZones([]); setNativeState('')
   }
 
   const pageStart = page * PAGE_SIZE + 1
@@ -465,6 +489,29 @@ function PlantsPageInner() {
           <hr className="border-warm-stone/20 my-3" />
 
           <FilterSection label="Bloom Month" options={MONTH_OPTIONS} selected={months} onToggle={v => toggle(months, v, setMonths)} />
+
+          <hr className="border-warm-stone/20 my-3" />
+
+          <FilterSection label="USDA Zone" options={ZONE_LABELS} selected={zones} onToggle={v => toggle(zones, v, setZones)} />
+
+          <div className="mb-1">
+            <p className="w-full py-2.5 text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em]">
+              Native to State
+              {nativeState && (
+                <span className="ml-1.5 bg-terracotta text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 normal-case tracking-normal">1</span>
+              )}
+            </p>
+            <select
+              value={nativeState}
+              onChange={e => setNativeState(e.target.value)}
+              className="w-full px-3 py-2 border border-warm-stone/40 rounded-lg text-sm text-dark-bark bg-stone-white focus:outline-none focus:ring-2 focus:ring-forest/30 focus:border-forest"
+            >
+              <option value="">Any state</option>
+              {US_STATES.map(s => (
+                <option key={s.code} value={s.code}>{s.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </aside>
 
@@ -520,6 +567,21 @@ function PlantsPageInner() {
                 <FilterSection label="Dormancy"    options={DORMANCY_OPTIONS} selected={dormancy}   onToggle={v => toggle(dormancy, v, setDormancy)} />
                 <hr className="border-warm-stone/20 my-2" />
                 <FilterSection label="Bloom Month" options={MONTH_OPTIONS}    selected={months}     onToggle={v => toggle(months, v, setMonths)} />
+                <hr className="border-warm-stone/20 my-2" />
+                <FilterSection label="USDA Zone" options={ZONE_LABELS} selected={zones} onToggle={v => toggle(zones, v, setZones)} />
+                <div className="mb-1 pb-2">
+                  <p className="w-full py-2.5 text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em]">Native to State</p>
+                  <select
+                    value={nativeState}
+                    onChange={e => setNativeState(e.target.value)}
+                    className="w-full px-3 py-2 border border-warm-stone/40 rounded-lg text-sm text-dark-bark bg-stone-white focus:outline-none focus:ring-2 focus:ring-forest/30 focus:border-forest"
+                  >
+                    <option value="">Any state</option>
+                    {US_STATES.map(s => (
+                      <option key={s.code} value={s.code}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-warm-stone/20">
                 <button onClick={clearAll} className="text-sm font-medium text-warm-stone hover:text-terracotta transition-colors">

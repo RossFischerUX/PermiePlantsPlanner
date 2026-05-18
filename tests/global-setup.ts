@@ -65,4 +65,17 @@ export default async function globalSetup() {
     path.join('tests', '.test-share-id.json'),
     JSON.stringify({ shareId: list.share_id, listId: list.id })
   )
+
+  // Save plant IDs for detail page tests — null if not yet in DB
+  const { data: invasivePlant } = await supabase
+    .from('plants').select('id').eq('is_invasive', true).limit(1).maybeSingle()
+  const { data: cultivarsPlant } = await supabase
+    .from('plants').select('id').not('notable_cultivars', 'is', null).limit(1).maybeSingle()
+  fs.writeFileSync(
+    path.join('tests', '.test-plant-ids.json'),
+    JSON.stringify({
+      invasivePlantId: invasivePlant?.id ?? null,
+      cultivarsPlantId: cultivarsPlant?.id ?? null,
+    })
+  )
 }

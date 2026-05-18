@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import AddToListClient from './AddToListClient'
+import { decodeZone } from '@/lib/zones'
 
 const SUN_ICONS: Record<string, string> = {
   'full sun': '☀️',
@@ -46,7 +47,11 @@ export default async function PlantDetailPage({ params }: { params: { id: string
     plant.growth_rate && { label: 'Growth Rate', value: plant.growth_rate },
     sizeLabel && { label: 'Size', value: sizeLabel },
     plant.dormancy && { label: 'Dormancy', value: plant.dormancy },
-    plant.usda_zones && { label: 'USDA Zones', value: plant.usda_zones },
+    (plant.usda_zone_min !== null && plant.usda_zone_max !== null)
+      ? { label: 'USDA Zones', value: `${decodeZone(plant.usda_zone_min)}–${decodeZone(plant.usda_zone_max)}` }
+      : plant.usda_zones
+        ? { label: 'USDA Zones', value: plant.usda_zones }
+        : null,
   ].filter(Boolean) as { label: string; value: string }[]
 
   const landscapingCells = [
@@ -96,8 +101,13 @@ export default async function PlantDetailPage({ params }: { params: { id: string
       </div>
 
       {/* Quick badges */}
-      {(plant.sun || plant.water || plant.plant_type) && (
+      {(plant.sun || plant.water || plant.plant_type || plant.is_invasive) && (
         <div className="flex flex-wrap gap-2 mb-8">
+          {plant.is_invasive && (
+            <span className="inline-flex items-center gap-1.5 text-sm font-semibold bg-red-50 text-red-700 px-3 py-1.5 rounded-full border border-red-200">
+              ⚠ Invasive Species
+            </span>
+          )}
           {plant.plant_type && (
             <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-terracotta bg-terracotta/10 border border-terracotta/20 px-3 py-1.5 rounded-full capitalize">
               {plant.plant_type}
@@ -165,6 +175,13 @@ export default async function PlantDetailPage({ params }: { params: { id: string
               ))}
             </div>
           )}
+        </section>
+      )}
+      {/* Notable Cultivars */}
+      {plant.notable_cultivars && (
+        <section className="mt-8 pt-8 border-t border-warm-stone/20">
+          <h2 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-3">Notable Cultivars</h2>
+          <p className="text-sm text-warm-umber leading-relaxed">{plant.notable_cultivars}</p>
         </section>
       )}
         </div>{/* end padding */}

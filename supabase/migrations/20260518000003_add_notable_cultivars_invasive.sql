@@ -1,0 +1,2 @@
+ALTER TABLE plants ADD COLUMN notable_cultivars TEXT;
+ALTER TABLE plants ADD COLUMN is_invasive BOOLEAN NOT NULL DEFAULT FALSE;
