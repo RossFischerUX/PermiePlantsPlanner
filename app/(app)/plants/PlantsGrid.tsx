@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import PlantCard from './PlantCard'
@@ -20,6 +20,10 @@ export default function PlantsGrid({ initialPlants, totalCount, filterParams, li
   const [plants, setPlants] = useState(initialPlants)
   const [isPending, startTransition] = useTransition()
   const [createModalPlantId, setCreateModalPlantId] = useState<string | null>(null)
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [])
   const [newListName, setNewListName] = useState('')
   const [newListDesc, setNewListDesc] = useState('')
   const [creatingList, setCreatingList] = useState(false)
