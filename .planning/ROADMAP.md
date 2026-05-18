@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. The plant browser fetches only the matching page of results from Supabase — network tab shows no full-catalog download
   3. Applying a filter (e.g., USDA zone 8) visibly updates the URL query string without a full page reload
   4. Paginating through results loads only the next page's records, not the full dataset
-**Plans:** 2/6 plans executed
+**Plans:** 4/6 plans executed
 
 Plans:
 **Wave 1** *(run in parallel — no dependencies)*
@@ -38,8 +38,8 @@ Plans:
 - [x] 01-02-PLAN.md — Foundation: install nuqs, NuqsAdapter, lib/plant-labels.ts, searchParams.ts
 
 **Wave 2** *(blocked on Wave 1 / 01-02 completion)*
-- [ ] 01-03-PLAN.md — Component extraction: FilterSection, PlantCard, PlantCardSkeleton
-- [ ] 01-04-PLAN.md — Server layer: actions.ts with buildPlantsQuery + fetchMorePlants Server Action
+- [x] 01-03-PLAN.md — Component extraction: FilterSection, PlantCard, PlantCardSkeleton
+- [x] 01-04-PLAN.md — Server layer: actions.ts with buildPlantsQuery + fetchMorePlants Server Action
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 01-05-PLAN.md — Client islands: FilterControls, ActiveFilterChips, PlantsFilterSidebar
@@ -109,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Server-Side Filtering | 2/6 | In Progress|  |
+| 1. Server-Side Filtering | 4/6 | In Progress|  |
 | 2. Functional Data Enrichment | 0/TBD | Not started | - |
 | 3. Companion Planting Schema | 0/TBD | Not started | - |
 | 4. Location Infrastructure | 0/TBD | Not started | - |
