@@ -1,0 +1,11 @@
+export const SUN_OPTIONS: string[] = ['full sun', 'part shade', 'full shade']
+export const WATER_OPTIONS: string[] = ['low', 'moderate', 'high']
+export const TYPE_OPTIONS: string[] = ['shrub', 'tree', 'perennial', 'groundcover', 'vine', 'grass']
+export const MONTH_OPTIONS: string[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+export const DORMANCY_OPTIONS: string[] = ['evergreen', 'deciduous', 'semi-evergreen']
+export const GROWTH_OPTIONS: string[] = ['slow', 'moderate', 'fast']
+export const SEASON_OPTIONS: string[] = ['Spring', 'Summer', 'Fall', 'Winter']
+export const LAYER_OPTIONS: string[] = ['canopy', 'sub-canopy', 'shrub', 'herb', 'ground cover', 'rhizosphere', 'climber']
+export const PERM_USE_OPTIONS: string[] = ['nitrogen fixer', 'dynamic accumulator', 'edible', 'medicinal', 'pollinator', 'biomass', 'windbreak', 'wildlife habitat', 'pioneer', 'insectary']
+export const SUN_ICONS: Record<string, string> = { 'full sun': '☀️', 'part shade': '⛅', 'full shade': '🌥️' }
+export const WATER_ICONS: Record<string, string> = { 'low': '💧', 'moderate': '💧💧', 'high': '💧💧💧' }
