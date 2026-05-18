@@ -28,6 +28,15 @@ export default function FilterControls() {
 
   return (
     <div data-pending={isPending ? '' : undefined}>
+      <div className="mb-4">
+        <input
+          type="search"
+          value={filters.q}
+          onChange={e => setFilters({ q: e.target.value })}
+          placeholder="Search plants…"
+          className="w-full px-3 py-2 border border-warm-stone/40 rounded-lg text-sm text-dark-bark bg-stone-white focus:outline-none focus:ring-2 focus:ring-forest/30 focus:border-forest"
+        />
+      </div>
       <FilterSection label="Permaculture Uses" options={PERM_USE_OPTIONS} selected={filters.permUses} onToggle={v => handleToggle('permUses', v)} />
       <FilterSection label="Forest Garden Layer" options={LAYER_OPTIONS} selected={filters.layers} onToggle={v => handleToggle('layers', v)} />
       <FilterSection label="Type" options={TYPE_OPTIONS} selected={filters.types} onToggle={v => handleToggle('types', v)} />

@@ -7,7 +7,7 @@ import FilterControls from './FilterControls'
 
 export default function PlantsFilterSidebar() {
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [filters] = useQueryStates(plantSearchParsers)
+  const [filters, setFilters] = useQueryStates(plantSearchParsers)
 
   const activeFilterCount =
     filters.sun.length +
@@ -19,14 +19,29 @@ export default function PlantsFilterSidebar() {
     filters.layers.length +
     filters.permUses.length +
     filters.zones.length +
-    (filters.state ? 1 : 0)
+    (filters.state ? 1 : 0) +
+    (filters.q ? 1 : 0)
+
+  function handleClearAll() {
+    setFilters({ sun: [], water: [], types: [], months: [], dormancy: [], growthRate: [], layers: [], permUses: [], zones: [], state: '', q: '' })
+  }
 
   return (
     <>
       {/* Desktop sidebar */}
       <aside className="w-72 flex-shrink-0 hidden lg:block">
         <div className="bg-stone-white rounded-2xl p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
-          <h3 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-4">Filter Plants</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em]">Filter Plants</h3>
+            {activeFilterCount > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="text-[11px] font-medium text-terracotta hover:text-terracotta/80 transition-colors"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
           <FilterControls />
         </div>
       </aside>
@@ -62,7 +77,7 @@ export default function PlantsFilterSidebar() {
             </div>
             <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-warm-stone/20">
               <button
-                onClick={() => setDrawerOpen(false)}
+                onClick={() => { handleClearAll(); setDrawerOpen(false) }}
                 className="text-sm font-medium text-warm-stone hover:text-terracotta transition-colors"
               >
                 Clear all

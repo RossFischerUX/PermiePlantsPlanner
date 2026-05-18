@@ -124,6 +124,7 @@ test.describe('Plant browser — public', () => {
     await nativeSelect.scrollIntoViewIfNeeded()
     await nativeSelect.selectOption('CA')
     await expect(page).toHaveURL(/state=CA/, { timeout: 5000 })
+    await expect(page.locator('p', { hasText: 'Showing' })).not.toContainText(`of ${initialCount}`, { timeout: 10000 })
     const filteredCount = await getFilteredCount(page)
     expect(filteredCount).toBeGreaterThan(0)
     expect(filteredCount).toBeLessThan(initialCount)
@@ -199,7 +200,7 @@ test.describe('Plant browser — public', () => {
     await expect(page.locator('.bg-cream.rounded-2xl')).toHaveCount(48, { timeout: 15000 })
     await page.locator('aside button').filter({ hasText: 'Sun' }).click()
     await page.locator('aside label').filter({ hasText: 'full sun' }).locator('input[type="checkbox"]').check()
-    await page.waitForSelector('p:has-text("Showing")')
+    await expect(page.locator('.bg-cream.rounded-2xl')).not.toHaveCount(48, { timeout: 10000 })
     expect(await page.locator('.bg-cream.rounded-2xl').count()).toBeLessThanOrEqual(24)
   })
 
