@@ -139,3 +139,227 @@ Rate-limited to 10 Claude API calls per 15s — don't remove the delay.
 - [playwright.config.ts](playwright.config.ts) — E2E config
 - [app/api/auth/callback/route.ts](app/api/auth/callback/route.ts) — auth callback: token_hash + PKCE exchange
 - [supabase/templates/](supabase/templates/) — branded email templates
+
+<!-- GSD:project-start source:PROJECT.md -->
+## Project
+
+**Permaculture Plant Picker**
+
+A deep-database platform for homesteaders and garden designers to discover, research, and assemble plant palettes for regenerative landscapes. Plants are surfaced with region-aware relevance — the system infers a user's Köppen-Geiger climate classification from their location and adjusts which data dimensions are most prominently surfaced (drought tolerance matters in a Mediterranean climate; it's background noise in the tropics). Design tools and community features are on the horizon; the database is the foundation everything else is built on.
+
+**Core Value:** A user with a site to plant can find the right plants for their specific place, understand what each plant contributes to the ecosystem, and assemble a palette — faster and with more confidence than any other tool.
+
+### Constraints
+
+- **Tech stack:** Next.js 14 + Supabase + Tailwind — established, no changes
+- **Design system:** Botanical Heritage tokens only — no gray/green Tailwind defaults
+- **Testing:** Playwright E2E only, targets production URL — be careful with destructive ops
+- **Image hosts:** Only `upload.wikimedia.org`, `*.supabase.co`, `inaturalist-open-data.s3.amazonaws.com`, `static.inaturalist.org` — new sources require `next.config.mjs` update
+- **Data enrichment rate:** Max 10 Claude API calls per 15s in import scripts
+<!-- GSD:project-end -->
+
+<!-- GSD:stack-start source:codebase/STACK.md -->
+## Technology Stack
+
+## Summary
+## Languages
+- TypeScript 5.9.3 — all application code (`app/`, `lib/`, `scripts/`)
+- SQL — Supabase migrations in `supabase/migrations/`
+- HTML — Supabase branded email templates in `supabase/templates/`
+## Runtime
+- Node.js — no version pinned (no `.nvmrc` / `.node-version`); dev environment runs v22.22.2
+- npm
+- Lockfile: `package-lock.json` present (lockfile version 3)
+## Frameworks
+- Next.js 14.2.35 — App Router, RSC-first, server actions and server components throughout `app/`
+- React 18.3.1 — UI rendering; client components gated with `'use client'` directive
+- Playwright 1.60.0 — E2E only; config at `playwright.config.ts`; tests in `tests/`; targets `https://permacultureplantpicker.com` (production)
+- Next.js built-in bundler (webpack / Turbopack-compatible via `next dev` / `next build`)
+- PostCSS 8 — CSS processing for Tailwind; config at `postcss.config.mjs`
+- tsx 4.22.0 — TypeScript script runner for `scripts/` data pipeline (bypasses TS build)
+- dotenv 17.4.2 — env file loading inside `scripts/`
+## Key Dependencies
+- `next` 14.2.35 — full-stack framework; routing, rendering, image optimization, middleware
+- `react` / `react-dom` 18.3.1 — UI layer
+- `@supabase/supabase-js` 2.105.4 — database client, auth, RLS
+- `@supabase/ssr` 0.10.3 — SSR-safe Supabase client helpers; used in `lib/supabase/server.ts` and `lib/supabase/client.ts`
+- `@anthropic-ai/sdk` 0.96.0 — Claude API client; used exclusively in `scripts/` for data enrichment
+- `@playwright/test` 1.60.0 — E2E test runner
+- `@types/node` ^20, `@types/react` ^18, `@types/react-dom` ^18 — TypeScript type definitions
+- `tsx` 4.22.0 — runs `scripts/*.ts` directly without a build step
+- `tailwindcss` 3.4.19 — utility-first CSS; custom Botanical Heritage design tokens in `tailwind.config.ts`
+- `postcss` ^8 — required Tailwind peer dependency
+## Configuration
+- App env vars loaded by Next.js from `.env.local` (not committed)
+- Scripts load `.env.local` explicitly via `dotenv.config({ path: '.env.local' })`
+- Required vars:
+- `next.config.mjs` — image remote pattern allowlist (Wikimedia, Supabase, iNaturalist CDNs)
+- `tsconfig.json` — incremental compilation, `bundler` module resolution, `@/*` alias
+- `tailwind.config.ts` — Botanical Heritage color tokens + custom warm box shadows
+- `postcss.config.mjs` — Tailwind plugin only
+## Supabase Local Development
+- PostgreSQL major version 17
+- Local API port 54321, DB port 54322, Studio port 54323
+- Auth configured for email/password only (SMS disabled, all OAuth providers disabled)
+- Email templates registered: `supabase/templates/confirm.html`, `supabase/templates/reset-password.html`
+- Migrations: `supabase/migrations/` (11 files); apply with `supabase db push`
+## Platform Requirements
+- Node.js (v20+ recommended based on `@types/node ^20`)
+- npm (lockfile v3)
+- Supabase CLI (for local dev / migrations)
+- Vercel (Next.js deployment)
+- Supabase hosted project (PostgreSQL + Auth)
+- Domain: `permacultureplantpicker.com`
+<!-- GSD:stack-end -->
+
+<!-- GSD:conventions-start source:CONVENTIONS.md -->
+## Conventions
+
+## Summary
+## Naming Patterns
+- Page files: always `page.tsx` (Next.js App Router convention)
+- Layout files: always `layout.tsx`
+- Client components extracted from pages: `PascalCase.tsx`, co-located in the same route directory (e.g., `NavUser.tsx`, `NewListForm.tsx`, `CopyShareUrl.tsx`, `ListItemActions.tsx`, `AddToListClient.tsx`)
+- Lib utilities: lowercase with hyphens — `types.ts`, `zones.ts`, `us-states.ts`
+- Supabase clients: `lib/supabase/server.ts`, `lib/supabase/client.ts`
+- Exported page/layout components: `PascalCase` named exports matching the file's role (e.g., `export default function ListsPage()`, `export default function AppLayout()`)
+- Internal sub-components defined in the same file: `PascalCase` (e.g., `FilterSection`, `PlantCard`, `PlantsPageInner`, `InfoCell`)
+- Event handlers: `handle` prefix — `handleSubmit`, `handleSignOut`, `handleRemove`, `handleAddToList`, `handleCreateList`
+- Boolean state: descriptive noun — `loading`, `copied`, `drawerOpen`, `showMenu`, `creatingList`
+- `camelCase` throughout
+- Filter state arrays named for the property they filter: `sun`, `water`, `types`, `months`, `zones`, `nativeState`
+- Supabase data destructured immediately: `const { data: list }`, `const { data: { user } }`
+- Domain types defined as `interface` in `lib/types.ts`: `Plant`, `PlantList`, `PlantListItem`
+- Enum-like string unions defined as `type` aliases: `Sun`, `Water`, `PlantType`, `ForestGardenLayer`
+- Lookup maps typed as `Record<string, string>`: `SUN_ICONS`, `WATER_ICONS`, `SUN_LABELS`, `WATER_LABELS`
+- Constants: `SCREAMING_SNAKE_CASE` arrays for filter option lists (e.g., `SUN_OPTIONS`, `ZONE_LABELS`, `PERM_USE_OPTIONS`)
+## TypeScript Usage
+## Component Patterns
+| Pattern | When | Example |
+|---------|------|---------|
+| Async server component (no directive) | Data fetching, auth guards, static rendering | `app/(app)/lists/page.tsx`, `app/(app)/plants/[id]/page.tsx` |
+| `'use client'` component | Browser state, event handlers, `useRouter`, `useSearchParams` | `app/(app)/plants/page.tsx`, `NavUser.tsx`, `NewListForm.tsx` |
+## Styling Approach
+- Colors: `parchment`, `cream`, `stone-white`, `forest` / `forest-dark`, `terracotta`, `warm-stone`, `dark-bark`, `warm-umber`, `sage-mist`
+- Shadows: `shadow-warm` (resting), `shadow-warm-md` (hover/elevation)
+- Fonts: `font-playfair` (headings, plant names), `font-inter` (default body, buttons, metadata)
+- Cards and images: `rounded-2xl` (16px)
+- Buttons and inputs: `rounded-lg` (8px)
+- Badges and pills: `rounded-full`
+- Hover on primary buttons: `hover:bg-forest-dark`
+- Hover on secondary elements: `hover:text-dark-bark` or `hover:bg-stone-white`
+- Destructive/remove hover: `hover:text-terracotta hover:bg-terracotta/10`
+- Opacity-based disabling: `disabled:opacity-50 disabled:cursor-not-allowed`
+- Transitions: `transition-colors duration-150` or `transition-colors duration-200`
+- Section label / eyebrow: `text-[11px] font-semibold uppercase tracking-[0.06em] text-warm-stone`
+- Body text: `text-sm text-warm-umber`
+- Plant card heading: `font-playfair text-xl font-semibold text-dark-bark`
+- Page heading: `font-playfair text-3xl font-semibold text-dark-bark`
+## Import Organization
+## Error Handling
+## Comments
+- Block comments in `app/(app)/plants/page.tsx` marking major JSX sections (`{/* Filter Sidebar */}`, `{/* Main content */}`)
+- Explanatory comments in `lib/zones.ts` for the encoding scheme
+- Comments in test files explaining test data setup rationale
+<!-- GSD:conventions-end -->
+
+<!-- GSD:architecture-start source:ARCHITECTURE.md -->
+## Architecture
+
+## Summary
+## System Overview
+```
+```
+## Route Groups and Their Roles
+- `app/(app)/layout.tsx` — sticky nav (fetches `auth.getUser()` server-side), footer. The route group name is invisible to the URL router.
+- `app/(app)/page.tsx` — marketing/home page (RSC, fetches hero plants from Supabase)
+- `app/(app)/plants/page.tsx` — plant browser (`'use client'`, loads all plants client-side, filters in memory)
+- `app/(app)/plants/[id]/page.tsx` — plant detail (RSC, single Supabase fetch)
+- `app/(app)/lists/page.tsx` — My Lists dashboard (RSC, redirects unauthenticated users)
+- `app/(app)/lists/[id]/page.tsx` — list editor (RSC, guards by `owner_id`)
+- `app/(app)/auth/` — login, signup, forgot-password, reset-password, signout pages (all `'use client'`)
+- `app/presents/[shareId]/page.tsx` — plant grid presentation (RSC, fetches by `share_id`)
+- `app/presents/[shareId]/reports/page.tsx` — water/bloom/season report tables (RSC)
+- Handles both `token_hash` + `verifyOtp` (email links) and PKCE `code` + `exchangeCodeForSession` flows.
+- Token-hash path is preferred; PKCE is a fallback.
+## Server vs. Client Split
+| Component | Render Mode | Supabase client |
+|-----------|-------------|-----------------|
+| `app/(app)/layout.tsx` | RSC | `server.ts` |
+| `app/(app)/page.tsx` | RSC | `server.ts` |
+| `app/(app)/plants/page.tsx` | Client (`'use client'`) | `client.ts` |
+| `app/(app)/plants/[id]/page.tsx` | RSC | `server.ts` |
+| `app/(app)/plants/[id]/AddToListClient.tsx` | Client | `client.ts` |
+| `app/(app)/lists/page.tsx` | RSC | `server.ts` |
+| `app/(app)/lists/[id]/page.tsx` | RSC | `server.ts` |
+| `app/(app)/lists/[id]/ListItemActions.tsx` | Client | `client.ts` |
+| `app/(app)/lists/[id]/CopyShareUrl.tsx` | Client | none (clipboard API) |
+| `app/(app)/lists/NewListForm.tsx` | Client | `client.ts` |
+| `app/(app)/NavUser.tsx` | Client | `client.ts` |
+| `app/(app)/auth/*` pages | Client | `client.ts` |
+| `app/presents/[shareId]/page.tsx` | RSC | `server.ts` |
+| `app/presents/[shareId]/reports/page.tsx` | RSC | `server.ts` |
+| `app/api/auth/callback/route.ts` | Route Handler | `server.ts` |
+## Data Flow
+### Public plant browse (RSC path)
+### Plant browser (client-side filter path)
+### List mutation (client component path)
+### Auth flow
+### Public presentation flow
+## State Management
+- **URL query params** — plant browser filter state (`/plants?sun=full+sun&zones=9a,9b`), synced via `router.replace`
+- **React `useState`** — local component state (filter toggles, modal visibility, form inputs, loading flags)
+- **Supabase session cookies** — auth state, managed by `@supabase/ssr`; read server-side in layouts/RSCs, set via the auth callback route
+- **`router.refresh()`** — triggers RSC re-render after client mutations to re-sync server-fetched data
+## Database Schema
+- `id UUID`, `common_name TEXT`, `latin_name TEXT`, `description TEXT`
+- `sun TEXT` — enum: `full sun | part shade | full shade`
+- `water TEXT` — enum: `low | moderate | high`
+- `plant_type TEXT` — enum: `shrub | tree | perennial | groundcover | vine | grass`
+- `bloom_months TEXT[]`, `season_of_interest TEXT[]`, `permaculture_uses TEXT[]`
+- `native_states TEXT[]` — e.g. `['CA', 'OR']`
+- `usda_zone_min INTEGER`, `usda_zone_max INTEGER` — half-zone encoding (9a=18, 9b=19); see `lib/zones.ts`
+- `usda_zones TEXT` — raw text, kept for backward compat
+- `is_invasive BOOLEAN`, `notable_cultivars TEXT`
+- RLS: SELECT policy `USING (true)` — fully public
+- `id UUID`, `owner_id UUID → auth.users(id)`, `title TEXT`, `description TEXT`
+- `share_id TEXT UNIQUE DEFAULT substring(md5(random()::text), 1, 13)` — auto-generated 13-char share token
+- RLS: SELECT public; INSERT/UPDATE/DELETE scoped to `auth.uid() = owner_id`
+- `id UUID`, `list_id UUID → plant_lists(id)`, `plant_id UUID → plants(id)`
+- `sort_order INTEGER`, `notes TEXT`
+- RLS: SELECT public; write ops verify list ownership via sub-select
+## Auth Architecture
+## Error Handling
+- **RSCs:** `notFound()` from `next/navigation` for missing records; `redirect('/auth/login')` for unauthenticated access to protected pages
+- **Client components:** local `useState` error string, displayed as `<p className="text-red-600 text-sm">` inline below forms
+- **Auth callback:** on failure, redirects to `/auth/login?error=auth`
+## Anti-Patterns
+### Client-side full-table load in plant browser
+### Duplicate display constants across files
+<!-- GSD:architecture-end -->
+
+<!-- GSD:skills-start source:skills/ -->
+## Project Skills
+
+No project skills found. Add skills to any of: `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `.github/skills/`, or `.codex/skills/` with a `SKILL.md` index file.
+<!-- GSD:skills-end -->
+
+<!-- GSD:workflow-start source:GSD defaults -->
+## GSD Workflow Enforcement
+
+Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
+
+Use these entry points:
+- `/gsd-quick` for small fixes, doc updates, and ad-hoc tasks
+- `/gsd-debug` for investigation and bug fixing
+- `/gsd-execute-phase` for planned phase work
+
+Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
+<!-- GSD:workflow-end -->
+
+<!-- GSD:profile-start -->
+## Developer Profile
+
+> Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
+> This section is managed by `generate-claude-profile` -- do not edit manually.
+<!-- GSD:profile-end -->
