@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. The plant browser fetches only the matching page of results from Supabase — network tab shows no full-catalog download
   3. Applying a filter (e.g., USDA zone 8) visibly updates the URL query string without a full page reload
   4. Paginating through results loads only the next page's records, not the full dataset
-**Plans:** 4/6 plans executed
+**Plans:** 5/6 plans executed
 
 Plans:
 **Wave 1** *(run in parallel — no dependencies)*
@@ -42,7 +42,7 @@ Plans:
 - [x] 01-04-PLAN.md — Server layer: actions.ts with buildPlantsQuery + fetchMorePlants Server Action
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 01-05-PLAN.md — Client islands: FilterControls, ActiveFilterChips, PlantsFilterSidebar
+- [x] 01-05-PLAN.md — Client islands: FilterControls, ActiveFilterChips, PlantsFilterSidebar
 
 **Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 01-06-PLAN.md — RSC rewrite: PlantsGrid + page.tsx as RSC (walking skeleton complete)
@@ -109,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Server-Side Filtering | 4/6 | In Progress|  |
+| 1. Server-Side Filtering | 5/6 | In Progress|  |
 | 2. Functional Data Enrichment | 0/TBD | Not started | - |
 | 3. Companion Planting Schema | 0/TBD | Not started | - |
 | 4. Location Infrastructure | 0/TBD | Not started | - |
