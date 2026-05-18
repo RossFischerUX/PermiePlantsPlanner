@@ -29,8 +29,9 @@ test.describe('Plant browser — public', () => {
   test('search for "lavender" returns only Lavender', async ({ page }) => {
     await page.goto('/plants')
     await page.waitForSelector('p:has-text("Showing")', { timeout: 20000 })
+    const initialCount = await getFilteredCount(page)
     await page.fill('input[type="search"]', 'lavender')
-    await page.waitForSelector('p:has-text("Showing")')
+    await expect(page.locator('p', { hasText: 'Showing' })).not.toContainText(`of ${initialCount}`, { timeout: 10000 })
     const count = await getFilteredCount(page)
     expect(count).toBe(1)
     await expect(page.getByText('Lavender')).toBeVisible()
