@@ -10,7 +10,7 @@ test.describe('Navigation — logged out', () => {
   test('shows Log in and Sign up in nav', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByRole('link', { name: 'Log in' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Sign up' })).toBeVisible()
+    await expect(page.locator('nav').getByRole('link', { name: 'Sign up' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'My Lists' })).not.toBeVisible()
   })
 })
@@ -57,7 +57,7 @@ test.describe('Signup page', () => {
 
   test('log in link navigates to login page', async ({ page }) => {
     await page.goto('/auth/signup')
-    await page.getByRole('link', { name: 'Sign in' }).click()
+    await page.locator('p').getByRole('link', { name: 'Sign in' }).click()
     await expect(page).toHaveURL('/auth/login')
   })
 

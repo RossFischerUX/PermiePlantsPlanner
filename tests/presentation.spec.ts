@@ -26,7 +26,7 @@ test.describe('Presentation page — public', () => {
     await page.goto(`/presents/${shareId}`)
     // Active tab has green border
     const plantsTab = page.getByText('Plants', { exact: true }).first()
-    await expect(plantsTab).toHaveClass(/text-green-700/)
+    await expect(plantsTab).toHaveClass(/text-forest/)
   })
 
   test('plant cards display name and badges', async ({ page }) => {
@@ -34,7 +34,7 @@ test.describe('Presentation page — public', () => {
     await page.goto(`/presents/${shareId}`)
     await page.waitForSelector('text=5 plants')
     // Each card should have at least common name and a sun/water badge
-    const cards = page.locator('.rounded-2xl.border.border-gray-100')
+    const cards = page.locator('.bg-cream.rounded-2xl')
     expect(await cards.count()).toBeGreaterThan(0)
   })
 
@@ -70,7 +70,7 @@ test.describe('Reports page — public', () => {
     const shareId = getShareId()
     await page.goto(`/presents/${shareId}/reports`)
     const reportsTab = page.getByText('Reports', { exact: true }).first()
-    await expect(reportsTab).toHaveClass(/text-green-700/)
+    await expect(reportsTab).toHaveClass(/text-forest/)
   })
 
   test('Plants tab link navigates back', async ({ page }) => {
