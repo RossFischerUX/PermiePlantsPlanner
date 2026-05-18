@@ -4,17 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import AddToListClient from './AddToListClient'
 import { decodeZone } from '@/lib/zones'
-
-const SUN_ICONS: Record<string, string> = {
-  'full sun': '☀️',
-  'part shade': '⛅',
-  'full shade': '🌥️',
-}
-const WATER_ICONS: Record<string, string> = {
-  'low': '💧',
-  'moderate': '💧💧',
-  'high': '💧💧💧',
-}
+import { SUN_ICONS, WATER_ICONS } from '@/lib/plant-labels'
 
 function InfoCell({ label, value }: { label: string; value: string }) {
   return (
