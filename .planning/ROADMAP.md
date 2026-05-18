@@ -12,7 +12,7 @@ Five phases deliver the core database infrastructure and UX foundations for a re
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Server-Side Filtering** - Replace client-side plant load with server-filtered, paginated queries and URL-driven filter state
+- [x] **Phase 1: Server-Side Filtering** - Replace client-side plant load with server-filtered, paginated queries and URL-driven filter state (completed 2026-05-18)
 - [ ] **Phase 2: Functional Data Enrichment** - Populate forest layer, functional roles, establishment, and harvest data for every plant via AI pipeline
 - [ ] **Phase 3: Companion Planting Schema** - Add plant_relationships table and TypeScript types for guild and companion data
 - [ ] **Phase 4: Location Infrastructure** - Geocode user location to Köppen-Geiger zone and persist it in user profiles
@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. The plant browser fetches only the matching page of results from Supabase — network tab shows no full-catalog download
   3. Applying a filter (e.g., USDA zone 8) visibly updates the URL query string without a full page reload
   4. Paginating through results loads only the next page's records, not the full dataset
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 **Wave 1** *(run in parallel — no dependencies)*
@@ -45,7 +45,7 @@ Plans:
 - [x] 01-05-PLAN.md — Client islands: FilterControls, ActiveFilterChips, PlantsFilterSidebar
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 01-06-PLAN.md — RSC rewrite: PlantsGrid + page.tsx as RSC (walking skeleton complete)
+- [x] 01-06-PLAN.md — RSC rewrite: PlantsGrid + page.tsx as RSC (walking skeleton complete)
 
 **Cross-cutting constraints:**
 - nuqs `shallow: false` required on every `useQueryState` hook (RSC re-execution depends on it)
@@ -109,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Server-Side Filtering | 5/6 | In Progress|  |
+| 1. Server-Side Filtering | 6/6 | Complete   | 2026-05-18 |
 | 2. Functional Data Enrichment | 0/TBD | Not started | - |
 | 3. Companion Planting Schema | 0/TBD | Not started | - |
 | 4. Location Infrastructure | 0/TBD | Not started | - |
