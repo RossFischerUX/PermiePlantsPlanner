@@ -37,7 +37,7 @@ Declared values (multiples of 4 only):
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Icon gaps, badge inner padding (`px-1.5 py-0.5`) |
-| sm | 8px | Compact element spacing, filter pill gaps (`gap-1.5`) |
+| sm | 8px | Compact element spacing, filter pill gaps (`gap-2`) |
 | md | 16px | Card inner padding (`p-5 = 20px` rounds to md band), filter sidebar padding |
 | lg | 24px | Section padding (`p-6`), sidebar inner padding |
 | xl | 32px | Major section breaks (`mb-8`) |
@@ -45,8 +45,7 @@ Declared values (multiples of 4 only):
 | 3xl | 64px | Page horizontal padding on desktop |
 
 Exceptions:
-- Touch targets for filter checkboxes: minimum 44px tall via combined `py-2.5` + label height (accessibility requirement)
-- Filter section header: `py-2.5` (10px) — existing pattern, keeps sidebar compact
+- Touch targets for filter checkboxes: minimum 44px tall via combined `py-2` + label height (accessibility requirement)
 - Card image area: `h-52` (208px) — fixed height for visual consistency across the grid
 
 ---
@@ -59,12 +58,10 @@ All values from `.stitch/DESIGN.md` and confirmed in `tailwind.config.ts`. This 
 |------|--------|------|--------|-------------|---------------------|
 | Page heading | Playfair Display | 30px (`text-3xl`) | 600 | 1.2 | "Plant Database" `h1` — unchanged |
 | Plant card name | Playfair Display | 20px (`text-xl`) | 600 | snug (~1.35) | `PlantCard` `h3` — unchanged |
-| Body / description | Inter | 14px (`text-sm`) | 400 | relaxed (~1.625) | Card descriptions, result count line |
-| Label / UI | Inter | 11px (`text-[11px]`) | 600 | 1.2, tracking `0.06em` | Section headers, filter labels, eyebrows — `uppercase` |
-| Metadata | Inter | 12px (`text-xs`) | 400 | 1.2 | Badges (sun, water), active filter chips |
-| Latin name | Inter | 14px (`text-sm`) | 400 italic | 1.5 | `text-warm-umber italic` — unchanged |
+| Body / description | Inter | 14px (`text-sm`) | 400 | relaxed (~1.625) | Card descriptions, latin names, result count line, metadata/badges |
+| Label / UI | Inter | 11px (`text-[11px]`) | 600 | 1.2, tracking `0.06em` | Section headers, filter labels, eyebrows, active filter chip text — `uppercase` where applicable |
 
-Result count line: Inter 14px weight 500 (`text-sm font-medium`), color `text-warm-umber`. Copy: "Showing 24 of 47 plants".
+Result count line: Inter 14px weight 400 (`text-sm font-normal`), color `text-warm-umber`. Copy: "Showing 24 of 47 plants".
 
 ---
 
@@ -99,6 +96,10 @@ Shadows: `shadow-warm` at rest → `shadow-warm-md` on hover. Warm-tinted only (
 
 ## Interaction Contracts
 
+### Visual Hierarchy
+
+The plant card grid is the primary focal point; the filter sidebar is secondary. On desktop, the eye enters top-left at the page heading, moves through active filter chips and result count, then lands on the card grid. On mobile, the sticky "Filters" button anchors the entry point.
+
 ### Filter Behavior
 
 - Filter change triggers immediate URL update via nuqs `useQueryState` — no debounce, no "Apply" button.
@@ -117,7 +118,7 @@ Chip anatomy:
 - Background: `bg-terracotta`
 - Text: `text-white text-[11px] capitalize`
 - Shape: `rounded-full`
-- Padding: `px-2.5 py-1`
+- Padding: `px-3 py-1`
 - Remove control: `×` suffix, `text-white/70`, becomes `text-white` on hover
 - Hover state: `hover:bg-terracotta/80`
 - "Clear all" link: `text-[11px] text-warm-stone hover:text-terracotta underline underline-offset-2`
@@ -144,7 +145,7 @@ Skeleton card anatomy:
 - Image placeholder: `h-52 bg-stone-white/80 rounded-t-2xl` — no animation content
 - Title bar: `h-5 w-3/4 bg-warm-stone/20 rounded mt-5 mx-5`
 - Subtitle bar: `h-3 w-1/2 bg-warm-stone/15 rounded mt-2 mx-5`
-- Badge row: two `h-6 w-16 bg-warm-stone/15 rounded-full` blocks, `mt-3 mx-5 flex gap-1.5`
+- Badge row: two `h-6 w-16 bg-warm-stone/15 rounded-full` blocks, `mt-3 mx-5 flex gap-2`
 - Animation: `animate-pulse` (Tailwind built-in) — gentle fade only, no shimmer
 
 Grid layout during skeleton: identical to loaded state — `grid sm:grid-cols-2 xl:grid-cols-3 gap-6`.
@@ -158,7 +159,7 @@ Copy format: `Showing {loaded} of {total} plant{s}` where:
 - `{total}` = COUNT query result with same filters applied
 - Pluralization: `plant` when total is 1, `plants` otherwise
 
-Typography: `text-sm font-medium text-warm-umber mb-5`
+Typography: `text-sm font-normal text-warm-umber mb-5`
 
 ### Load More Button
 
@@ -166,7 +167,7 @@ Shown only when `loaded < total`. Hidden when all results are rendered.
 
 Active state (more pages available):
 - Label: `Load more plants`
-- Style: `text-sm font-medium border border-warm-stone/40 text-warm-umber py-2.5 px-6 rounded-lg hover:bg-stone-white transition-colors duration-150`
+- Style: `text-sm font-medium border border-warm-stone/40 text-warm-umber py-2 px-6 rounded-lg hover:bg-stone-white transition-colors duration-150`
 - Position: centered below the grid, `mt-10`
 - Loading state: label changes to `Loading…`, button `disabled:opacity-50 disabled:cursor-not-allowed`
 
@@ -229,7 +230,7 @@ Typography matches empty state. No inline stack traces shown to user.
 | Create list description hint | `(optional)` |
 | Create list name placeholder | `My garden plan` |
 | Create list description placeholder | `What is this list for?` |
-| Create list cancel | `Cancel` |
+| Create list cancel | `Discard Changes` |
 | Create list submit (idle) | `Create List` |
 | Create list submit (loading) | `Creating…` |
 | Add to list button (idle) | `+ Add to list` |
