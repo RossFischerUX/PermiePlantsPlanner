@@ -132,7 +132,12 @@ async function enrichWithClaude(commonName: string, latinName: string): Promise<
       ],
     })
 
-    const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    const block = response.content[0]
+    const text = block && block.type === 'text' ? block.text.trim() : ''
+    if (!text) {
+      console.warn(`  ⚠ Truncated or empty content block from Claude for ${latinName}`)
+      return null
+    }
     const match = text.match(/\{[\s\S]*\}/)
     if (!match) {
       console.warn(`  ⚠ No JSON in Claude response for ${latinName}`)
@@ -173,16 +178,28 @@ async function main() {
   if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY missing from .env.local')
 
   // Select rows where ANY of the 7 new fields is null (OR-of-nulls on new fields only).
-  // permaculture_uses is excluded from this clause — it is always rewritten (D-01).
+  // Also re-selects rows where required array fields are empty ({}) — not null but carrying
+  // no data. These were permanently stuck before ([] is not null, OR-of-nulls missed them).
+  // permaculture_uses empty-array rows are explicitly included so those 8 stuck rows can
+  // be re-enriched, even though permaculture_uses is excluded from TARGET_FIELDS (D-01).
   // Paginate via .range(): PostgREST caps a single response at 1000 rows, and the
   // live catalog exceeds that — without paging, rows beyond 1000 are silently dropped.
   const PAGE_SIZE = 1000
   const plants: PlantRow[] = []
+  const emptyArrayTerms = [
+    'succession_role.eq.{}',
+    'propagation_methods.eq.{}',
+    'permaculture_uses.eq.{}',
+  ]
+  const orClause = [
+    ...TARGET_FIELDS.map(f => `${f}.is.null`),
+    ...emptyArrayTerms,
+  ].join(',')
   for (let page = 0; ; page++) {
     const { data, error } = await supabase
       .from('plants')
       .select('id, common_name, latin_name, permaculture_uses, succession_role, establishment_difficulty, maintenance_level, years_to_bearing, propagation_methods, edible_parts, harvest_months')
-      .or(TARGET_FIELDS.map(f => `${f}.is.null`).join(','))
+      .or(orClause)
       .order('common_name')
       .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
 
@@ -224,20 +241,32 @@ async function main() {
         // Empty-array convention (Pitfall 3): write [] only after a deliberate enrichment pass
         // (non-edible plant → edible_parts = []); keep NULL on Claude failure so the row
         // remains in the OR-of-nulls target and is retried on the next run.
+        // CR-02: for required array fields, treat an all-invalid array the same as a Claude
+        // failure — write null (not []) so the row stays targetable on reruns. Mirror the
+        // normalizeEnum precedent (null on out-of-vocab) for array fields.
+        // edible_parts / harvest_months keep [] semantics (D-19: empty is valid for non-edible).
+        const puArr = validArr(raw.permaculture_uses, FUNCTIONAL_ROLE_SET)
         const update: Record<string, unknown> = {
-          permaculture_uses: validArr(raw.permaculture_uses, FUNCTIONAL_ROLE_SET), // D-01: ALWAYS overwrite
+          permaculture_uses: puArr.length ? puArr : null, // D-01: ALWAYS overwrite; null if all-invalid
         }
 
-        if (plant.succession_role == null)
-          update.succession_role = validArr(raw.succession_role, SUCCESSION_SET)
+        if (plant.succession_role == null || (Array.isArray(plant.succession_role) && plant.succession_role.length === 0)) {
+          const v = validArr(raw.succession_role, SUCCESSION_SET)
+          update.succession_role = v.length ? v : null
+        }
         if (plant.establishment_difficulty == null)
           update.establishment_difficulty = normalizeEnum(raw.establishment_difficulty, ESTABLISHMENT_OPTIONS as readonly string[])
         if (plant.maintenance_level == null)
           update.maintenance_level = normalizeEnum(raw.maintenance_level, MAINTENANCE_OPTIONS as readonly string[])
-        if (plant.years_to_bearing == null)
-          update.years_to_bearing = Number.isInteger(raw.years_to_bearing) ? raw.years_to_bearing : null
-        if (plant.propagation_methods == null)
-          update.propagation_methods = validArr(raw.propagation_methods, PROPAGATION_SET)
+        if (plant.years_to_bearing == null) {
+          const y = raw.years_to_bearing
+          update.years_to_bearing =
+            typeof y === 'number' && Number.isInteger(y) && y > 0 && y <= 200 ? y : null
+        }
+        if (plant.propagation_methods == null || (Array.isArray(plant.propagation_methods) && plant.propagation_methods.length === 0)) {
+          const v = validArr(raw.propagation_methods, PROPAGATION_SET)
+          update.propagation_methods = v.length ? v : null
+        }
         if (plant.edible_parts == null)
           update.edible_parts = validArr(raw.edible_parts, EDIBLE_SET) // [] if non-edible — deliberate, idempotent
         if (plant.harvest_months == null)
@@ -288,17 +317,16 @@ async function verify() {
 
   if (totalError) throw new Error(`Could not count plants: ${totalError.message}`)
 
-  // D-18: REQUIRED fields that must have non-null coverage across all plants.
+  // D-18: REQUIRED fields that must have non-null, non-empty coverage across all plants.
   // D-19 exemptions:
   //   years_to_bearing — legitimately null for non-food plants (EXEMPT)
   //   edible_parts / harvest_months — empty {} arrays are valid; assert typed presence only
-  const REQUIRED = [
-    'permaculture_uses',
-    'succession_role',
-    'establishment_difficulty',
-    'maintenance_level',
-    'propagation_methods',
-  ] as const
+  //
+  // REQUIRED_ARRAY fields use a two-condition count: NOT NULL AND NOT empty-array.
+  // An empty {} array is no data — it must not count as covered (CR-02 fix).
+  // REQUIRED_SCALAR fields use the existing .not(f,'is',null) check (no empty-array concept).
+  const REQUIRED_ARRAY = ['permaculture_uses', 'succession_role', 'propagation_methods'] as const
+  const REQUIRED_SCALAR = ['establishment_difficulty', 'maintenance_level'] as const
 
   const REQUIRED_LABELS: Record<string, string> = {
     permaculture_uses: 'functional_roles (permaculture_uses)',
@@ -310,7 +338,50 @@ async function verify() {
 
   let failed = false
 
-  for (const f of REQUIRED) {
+  for (const f of REQUIRED_ARRAY) {
+    // Count rows that have real data: NOT NULL and NOT empty array
+    const { count: ok, error: countError } = await supabase
+      .from('plants')
+      .select('id', { count: 'exact', head: true })
+      .not(f, 'is', null)
+      .neq(f, '{}')
+
+    if (countError) {
+      console.error(`  ✗ Could not count ${f}: ${countError.message}`)
+      failed = true
+      continue
+    }
+
+    const label = REQUIRED_LABELS[f] ?? f
+    const mark = ok === total ? '✓' : '✗'
+    console.log(`  ${label}: ${ok}/${total} ${mark}`)
+
+    if (ok !== total) {
+      failed = true
+      // Surface both NULL offenders and empty-array offenders
+      const { data: nullBad, error: nullErr } = await supabase
+        .from('plants')
+        .select('id, common_name')
+        .is(f, null)
+      const { data: emptyBad, error: emptyErr } = await supabase
+        .from('plants')
+        .select('id, common_name')
+        .eq(f, '{}')
+
+      if (nullErr) {
+        console.error(`     Could not list null offenders for ${f}: ${nullErr.message}`)
+      } else {
+        nullBad?.forEach(p => console.log(`     ✗ null: ${p.common_name} (${p.id})`))
+      }
+      if (emptyErr) {
+        console.error(`     Could not list empty-array offenders for ${f}: ${emptyErr.message}`)
+      } else {
+        emptyBad?.forEach(p => console.log(`     ✗ {}: ${p.common_name} (${p.id})`))
+      }
+    }
+  }
+
+  for (const f of REQUIRED_SCALAR) {
     const { count: ok, error: countError } = await supabase
       .from('plants')
       .select('id', { count: 'exact', head: true })
