@@ -1,9 +1,17 @@
 ---
 phase: 02-functional-data-enrichment
 verified: 2026-05-19T08:00:00Z
-status: human_needed
+status: passed
 score: 5/5 must-haves verified
 overrides_applied: 0
+human_verification_resolved: 2026-05-19
+human_verification_resolution:
+  - item: "Production CI — 5 new detail-page tests against production URL"
+    status: resolved
+    evidence: "main pushed to origin (3f506ee); Vercel production deploy ppp-1dsx0s4k1 Ready; `npx playwright test tests/plants.spec.ts` against permacultureplantpicker.com — all detail-page tests green: D-05 regression, Functional Roles pill, Forest Layer & Succession, Establishment & Care, Harvest conditional-hide. 28 passed / 2 failed. The 2 failures (plants.spec.ts:229,236) are pre-existing logged-in 'Add to list' fixture tests requiring a seeded '[TEST] Presentation List' for the auth account — a lists-feature (Phase 5) test-fixture gap, NOT a Phase 2 regression and out of scope for this item (which scoped to detail-page tests)."
+  - item: "WR-02 — Forest Layer & Succession test coupled to mutable common-ivy row"
+    status: resolved
+    evidence: "tests/plants.spec.ts:311 rewritten (commit 3f506ee) to assert the conditional-hide contract (section absent = valid; section present ⇒ forest-layer InfoCell or succession pill) instead of coupling to common ivy's mutable succession_role. Verified green against production."
 re_verification:
   previous_status: gaps_found
   previous_score: 4/5
@@ -31,7 +39,7 @@ human_verification:
 
 **Phase Goal:** Every plant in the database has structured ecological role, forest layer, establishment, and harvest data — readable in the UI and filterable
 **Verified:** 2026-05-19
-**Status:** human_needed
+**Status:** passed (human verification resolved 2026-05-19 — see frontmatter `human_verification_resolution`)
 **Re-verification:** Yes — after gap-closure plan 02-04 (D-20 / CR-01 / CR-02 / WR-01 / IN-04)
 
 ## Re-verification Context
