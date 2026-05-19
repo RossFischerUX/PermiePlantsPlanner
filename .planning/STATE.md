@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-18)
 Phase: 02 (functional-data-enrichment) — EXECUTING
 Plan: 3 of 3
 Status: Phase complete — ready for verification
-Last activity: 2026-05-19
+Last activity: 2026-05-19 - Completed quick task 260518-vxy: dedupe plants table (1716→1455)
 
 Progress: [█████████░] 89%
 
@@ -74,6 +74,12 @@ None yet.
 
 - Phase 4 (LOC): Köppen-Geiger lookup strategy not yet chosen — static table vs. API TBD at planning time
 - Phase 5 (LIST): `plant_list_items` RLS open SELECT policy is a live security gap; should be addressed before adding more list features
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260518-vxy | Dedupe plants table (1716→1455; 153 dupe groups collapsed, 261 rows deleted, 1 list ref repointed) | 2026-05-19 | 54aa7e7 | [260518-vxy-dedupe-plants-table-detect-duplicate-spe](./quick/260518-vxy-dedupe-plants-table-detect-duplicate-spe/) |
 
 ## Deferred Items
 
