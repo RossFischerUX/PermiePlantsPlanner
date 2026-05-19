@@ -150,11 +150,14 @@ async function enrichWithClaude(commonName: string, latinName: string): Promise<
 // permaculture_uses = ALWAYS overwrite (D-01); the 7 new fields = per-field skip-if-populated (D-17).
 // These are intentionally opposite — see PATTERNS Pitfall 2.
 // permaculture_uses is deliberately NOT in TARGET_FIELDS and NOT in the .or() clause.
+// years_to_bearing is deliberately NOT a targeting trigger: per D-19 it is legitimately
+// null for non-food plants, so including it in the OR-of-nulls would re-target those
+// rows forever (breaking D-17's "second run is a no-op"). It is still backfilled by the
+// per-field merge whenever a row is targeted for a genuine gap in the other 6 fields.
 const TARGET_FIELDS = [
   'succession_role',
   'establishment_difficulty',
   'maintenance_level',
-  'years_to_bearing',
   'propagation_methods',
   'edible_parts',
   'harvest_months',
