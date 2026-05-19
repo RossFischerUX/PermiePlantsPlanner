@@ -29,6 +29,13 @@ export interface Plant {
   dormancy: string | null
   forest_garden_layer: ForestGardenLayer | null
   permaculture_uses: string[] | null
+  succession_role: string[] | null
+  establishment_difficulty: string | null
+  maintenance_level: string | null
+  years_to_bearing: number | null
+  propagation_methods: string[] | null
+  edible_parts: string[] | null
+  harvest_months: string[] | null
   notable_cultivars: string | null
   is_invasive: boolean
   created_at: string
