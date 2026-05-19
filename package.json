@@ -9,6 +9,7 @@
     "lint": "next lint",
     "import-plants": "tsx scripts/import-plants.ts",
     "update-plants": "tsx scripts/update-existing-plants.ts",
+    "enrich-functional-data": "tsx scripts/enrich-functional-data.ts",
     "retry-plants": "tsx scripts/retry-skipped-plants.ts",
     "import-permaculture": "tsx scripts/import-permaculture-plants.ts",
     "fix-images": "tsx scripts/fix-plant-images.ts",
