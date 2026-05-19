@@ -171,15 +171,24 @@ async function main() {
 
   // Select rows where ANY of the 7 new fields is null (OR-of-nulls on new fields only).
   // permaculture_uses is excluded from this clause — it is always rewritten (D-01).
-  const { data, error } = await supabase
-    .from('plants')
-    .select('id, common_name, latin_name, permaculture_uses, succession_role, establishment_difficulty, maintenance_level, years_to_bearing, propagation_methods, edible_parts, harvest_months')
-    .or(TARGET_FIELDS.map(f => `${f}.is.null`).join(','))
-    .order('common_name')
+  // Paginate via .range(): PostgREST caps a single response at 1000 rows, and the
+  // live catalog exceeds that — without paging, rows beyond 1000 are silently dropped.
+  const PAGE_SIZE = 1000
+  const plants: PlantRow[] = []
+  for (let page = 0; ; page++) {
+    const { data, error } = await supabase
+      .from('plants')
+      .select('id, common_name, latin_name, permaculture_uses, succession_role, establishment_difficulty, maintenance_level, years_to_bearing, propagation_methods, edible_parts, harvest_months')
+      .or(TARGET_FIELDS.map(f => `${f}.is.null`).join(','))
+      .order('common_name')
+      .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
 
-  if (error) throw new Error(`Could not fetch plants: ${error.message}`)
+    if (error) throw new Error(`Could not fetch plants: ${error.message}`)
 
-  const plants = (data ?? []) as PlantRow[]
+    const rows = (data ?? []) as PlantRow[]
+    plants.push(...rows)
+    if (rows.length < PAGE_SIZE) break
+  }
   console.log(`Found ${plants.length} plants to enrich.\n`)
 
   if (plants.length === 0) {
