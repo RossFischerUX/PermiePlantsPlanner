@@ -59,3 +59,16 @@ export interface PlantListItem {
   created_at: string
   plant?: Plant
 }
+
+export type RelationshipType = 'HELPS' | 'AVOIDS'
+export type RelationshipConfidence = 'verified' | 'traditional' | 'anecdotal'
+
+export interface PlantRelationship {
+  id: string
+  subject_plant_id: string
+  object_plant_id: string
+  relationship_type: RelationshipType
+  confidence: RelationshipConfidence
+  mechanism: string | null
+  created_at: string
+}
