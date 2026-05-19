@@ -19,6 +19,13 @@ npm run lint         # ESLint (Next.js built-in)
 npx playwright test  # run E2E tests (hits production URL)
 ```
 
+## Dev Server
+Always start the dev server on port 3000. Before running `npm run dev`, kill any existing process on that port:
+```bash
+kill $(lsof -ti :3000) 2>/dev/null; npm run dev
+```
+Never let Next.js fall back to 3001, 3002, etc. — kill the stale server first.
+
 ## Architecture
 - `app/layout.tsx` — root layout: HTML shell, fonts, globals only (no nav/footer)
 - `app/(app)/` — route group for all app pages that need nav + footer
@@ -57,6 +64,8 @@ Three tables with RLS:
 
 Run migrations with: `supabase db push` (local) or apply in Supabase dashboard.
 
+**Catalog scale + PostgREST 1000-row cap:** The `plants` table is ~1716 rows (not ~250 — older plan estimates are stale). Supabase/PostgREST silently caps a single `.select()` / `.or()` response at **1000 rows**. Any bulk read against `plants` (enrichment/backfill scripts, full-catalog queries) MUST paginate with `.range(from, to)` in a loop until a short page returns — an unpaginated bulk query drops every row past 1000 with no error, producing false-positive "full coverage" gates.
+
 ## Environment Variables
 Required (copy from Supabase dashboard + Anthropic console):
 ```
@@ -71,6 +80,7 @@ ANTHROPIC_API_KEY=           # scripts only
 - Two suites: `logged-in` (uses stored auth state) and `logged-out`
 - Tests run against the **production** Vercel URL — be careful with destructive ops
 - Auth state cached at `tests/.auth-state.json`
+- **Validating undeployed changes:** because the suite targets production, code not yet deployed cannot be verified by the configured baseURL. Validate new/changed pages against a local dev server (`npm run dev` on :3000) — it reads the **same live Supabase**, so enriched/production data is real. Do not permanently repoint `playwright.config.ts` at localhost; revert any temporary baseURL change before committing.
 
 **Playwright gotchas:**
 - **Footer link ambiguity:** `app/(app)/layout.tsx` footer always renders "Sign Up", "Sign In", and "My Lists" links regardless of auth state. Scope assertions to `nav` (e.g. `page.locator('nav').getByRole('link', { name: 'Sign up' })`) or `p` for form-footer links — never bare `page.getByRole`.
@@ -107,6 +117,7 @@ All UI uses the **Botanical Heritage** design system. Do not introduce gray/gree
 - TypeScript strict mode; no `any` unless unavoidable
 - Path alias `@/*` maps to project root
 - No Prettier config — rely on `next lint` for style checks
+- ESLint is pinned to `eslint@^8` + `eslint-config-next@^14` deliberately — **do NOT upgrade ESLint to 9**; v9's flat-config breaks the `next lint` bridge on Next 14. A `.eslintrc.json` must exist or bare `npm run lint` launches an interactive setup wizard that blocks automated runs.
 - No comments unless the WHY is non-obvious
 - Tailwind inline classes preferred over custom CSS
 - Allowed remote image hosts (configured in `next.config.mjs`): `upload.wikimedia.org`, `*.supabase.co`, `inaturalist-open-data.s3.amazonaws.com`, `static.inaturalist.org` — adding a new image source requires adding it here or Next.js will 500 at SSR time on Server Components
