@@ -65,7 +65,7 @@ Plans:
   3. A plant detail page shows propagation methods, establishment difficulty, and maintenance level
   4. A plant detail page shows edible parts and approximate harvest months
   5. Running the enrichment pipeline script skips already-populated records and completes without errors; a post-run verification confirms all fields are non-null for the enriched set
-**Plans:** 2/3 plans executed
+**Plans:** 4 plans (3/4 executed; 02-04 is a gap-closure plan for the DATA-05 verification blocker)
 
 Plans:
 **Wave 1** *(run first — no dependencies)*
@@ -75,7 +75,10 @@ Plans:
 - [x] 02-02-PLAN.md — Pipeline slice: enrich-functional-data.ts (always-overwrite roles vs. per-field skip new fields) + --verify gate + run enrichment + DATA-05 verify
 
 **Wave 3** *(blocked on 02-02 — needs enriched data to display/test)*
-- [ ] 02-03-PLAN.md — Display slice: 4 dedicated detail-page sections (Functional Roles / Forest Layer & Succession / Establishment & Care / Harvest) + Playwright assertions
+- [x] 02-03-PLAN.md — Display slice: 4 dedicated detail-page sections (Functional Roles / Forest Layer & Succession / Establishment & Care / Harvest) + Playwright assertions
+
+**Gap closure** *(blocked on 02-02/02-03 — addresses 02-VERIFICATION.md DATA-05 blocker + CR-01/WR-01/IN-04 warnings)*
+- [ ] 02-04-PLAN.md — DATA-05 gap closure: required-array null semantics + content guard + years_to_bearing clamp + empty-array-aware --verify/targeting (CR-02/CR-01/WR-01) + live re-run proof + unconditional Forest Layer test (IN-04)
 
 ### Phase 3: Companion Planting Schema
 **Goal**: The database and application type layer support companion planting relationships between plants
@@ -120,7 +123,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Server-Side Filtering | 6/6 | Complete   | 2026-05-18 |
-| 2. Functional Data Enrichment | 2/3 | In Progress|  |
+| 2. Functional Data Enrichment | 3/4 | In Progress (DATA-05 gap closure pending) |  |
 | 3. Companion Planting Schema | 0/TBD | Not started | - |
 | 4. Location Infrastructure | 0/TBD | Not started | - |
 | 5. List UX & Security | 0/TBD | Not started | - |
