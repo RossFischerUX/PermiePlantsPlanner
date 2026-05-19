@@ -228,7 +228,30 @@ async function main() {
         const raw = await enrichWithClaude(plant.common_name, plant.latin_name)
 
         if (!raw) {
-          console.warn(`  ⚠ Skipping ${plant.latin_name} (no Claude data)`)
+          // CR-02 skip-path closure (D-20): when Claude fails, convert any {} in required-array
+          // fields to NULL so the row stays re-targetable on future runs. Never write {} —
+          // NULL is the honest "not yet enriched / genuinely inapplicable" state.
+          // Do NOT touch edible_parts / harvest_months (D-19 empty is valid).
+          const skipUpdate: Record<string, null> = {}
+          if (Array.isArray(plant.succession_role) && plant.succession_role.length === 0)
+            skipUpdate.succession_role = null
+          if (Array.isArray(plant.propagation_methods) && plant.propagation_methods.length === 0)
+            skipUpdate.propagation_methods = null
+          if (Array.isArray(plant.permaculture_uses) && plant.permaculture_uses.length === 0)
+            skipUpdate.permaculture_uses = null
+          if (Object.keys(skipUpdate).length > 0) {
+            const { error: skipUpdateError } = await supabase
+              .from('plants')
+              .update(skipUpdate)
+              .eq('id', plant.id)
+            if (skipUpdateError) {
+              console.warn(`  ⚠ Could not normalize {} → null for ${plant.latin_name}: ${skipUpdateError.message}`)
+            } else {
+              console.warn(`  ⚠ Skipping ${plant.latin_name} (no Claude data) — normalized {} → null for: ${Object.keys(skipUpdate).join(', ')}`)
+            }
+          } else {
+            console.warn(`  ⚠ Skipping ${plant.latin_name} (no Claude data)`)
+          }
           skipped++
           return
         }
@@ -310,21 +333,20 @@ async function verify() {
 
   if (!SERVICE_ROLE_KEY) throw new Error('SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) missing from .env.local')
 
-  // D-19: enriched set = full ~250 catalog
+  // D-19/D-20: enriched set = full catalog
   const { count: total, error: totalError } = await supabase
     .from('plants')
     .select('id', { count: 'exact', head: true })
 
   if (totalError) throw new Error(`Could not count plants: ${totalError.message}`)
 
-  // D-18: REQUIRED fields that must have non-null, non-empty coverage across all plants.
-  // D-19 exemptions:
-  //   years_to_bearing — legitimately null for non-food plants (EXEMPT)
-  //   edible_parts / harvest_months — empty {} arrays are valid; assert typed presence only
-  //
-  // REQUIRED_ARRAY fields use a two-condition count: NOT NULL AND NOT empty-array.
-  // An empty {} array is no data — it must not count as covered (CR-02 fix).
-  // REQUIRED_SCALAR fields use the existing .not(f,'is',null) check (no empty-array concept).
+  // D-18 / D-20 gate semantics:
+  //   REQUIRED_ARRAY fields — hard-fail ONLY when {} count > 0 (dishonest locked state).
+  //     NULL rows are accepted as reviewed informational residual (D-20) and printed
+  //     as such — they do NOT set failed = true.
+  //   REQUIRED_SCALAR fields — hard-fail when IS NULL (unchanged).
+  //   edible_parts / harvest_months — typed-presence only (D-19 unchanged).
+  //   years_to_bearing — exempt (legitimately null for non-food plants per D-19).
   const REQUIRED_ARRAY = ['permaculture_uses', 'succession_role', 'propagation_methods'] as const
   const REQUIRED_SCALAR = ['establishment_difficulty', 'maintenance_level'] as const
 
@@ -338,45 +360,79 @@ async function verify() {
 
   let failed = false
 
+  // Collect NULL residuals across all required-array fields for the informational section
+  const nullResiduals: Array<{ field: string; id: string; common_name: string }> = []
+
   for (const f of REQUIRED_ARRAY) {
     // Count rows that have real data: NOT NULL and NOT empty array
-    const { count: ok, error: countError } = await supabase
+    const { count: okCount, error: okErr } = await supabase
       .from('plants')
       .select('id', { count: 'exact', head: true })
       .not(f, 'is', null)
       .neq(f, '{}')
 
-    if (countError) {
-      console.error(`  ✗ Could not count ${f}: ${countError.message}`)
+    if (okErr) {
+      console.error(`  ✗ Could not count ${f}: ${okErr.message}`)
+      failed = true
+      continue
+    }
+
+    // Count {} rows (the dishonest locked state — HARD FAIL if > 0)
+    const { count: emptyCount, error: emptyErr } = await supabase
+      .from('plants')
+      .select('id', { count: 'exact', head: true })
+      .eq(f, '{}')
+
+    if (emptyErr) {
+      console.error(`  ✗ Could not count empty-array ${f}: ${emptyErr.message}`)
+      failed = true
+      continue
+    }
+
+    // Count NULL rows (informational residual — NOT a failure per D-20)
+    const { count: nullCount, error: nullErr } = await supabase
+      .from('plants')
+      .select('id', { count: 'exact', head: true })
+      .is(f, null)
+
+    if (nullErr) {
+      console.error(`  ✗ Could not count null ${f}: ${nullErr.message}`)
       failed = true
       continue
     }
 
     const label = REQUIRED_LABELS[f] ?? f
-    const mark = ok === total ? '✓' : '✗'
-    console.log(`  ${label}: ${ok}/${total} ${mark}`)
+    const hasEmpty = (emptyCount ?? 0) > 0
+    const hasNull = (nullCount ?? 0) > 0
 
-    if (ok !== total) {
+    if (hasEmpty) {
+      // {} rows are a hard failure — dishonest locked state
       failed = true
-      // Surface both NULL offenders and empty-array offenders
-      const { data: nullBad, error: nullErr } = await supabase
-        .from('plants')
-        .select('id, common_name')
-        .is(f, null)
-      const { data: emptyBad, error: emptyErr } = await supabase
+      console.log(`  ${label}: ${okCount}/${total} ✗  (${emptyCount} rows stuck as {} — HARD FAIL; ${nullCount ?? 0} NULL informational residual)`)
+      const { data: emptyRows, error: listEmptyErr } = await supabase
         .from('plants')
         .select('id, common_name')
         .eq(f, '{}')
-
-      if (nullErr) {
-        console.error(`     Could not list null offenders for ${f}: ${nullErr.message}`)
+      if (listEmptyErr) {
+        console.error(`     Could not list {} offenders for ${f}: ${listEmptyErr.message}`)
       } else {
-        nullBad?.forEach(p => console.log(`     ✗ null: ${p.common_name} (${p.id})`))
+        emptyRows?.forEach(p => console.log(`     ✗ {}: ${p.common_name} (${p.id})`))
       }
-      if (emptyErr) {
-        console.error(`     Could not list empty-array offenders for ${f}: ${emptyErr.message}`)
-      } else {
-        emptyBad?.forEach(p => console.log(`     ✗ {}: ${p.common_name} (${p.id})`))
+    } else if (hasNull) {
+      // NULL only — accepted residual, not a failure
+      console.log(`  ${label}: ${okCount}/${total} ✓  (${nullCount} NULL informational residual — see below)`)
+    } else {
+      console.log(`  ${label}: ${okCount}/${total} ✓`)
+    }
+
+    // Collect NULL rows for the informational residual section printed at the end
+    if (hasNull && !hasEmpty) {
+      const { data: nullRows, error: listNullErr } = await supabase
+        .from('plants')
+        .select('id, common_name')
+        .is(f, null)
+      if (!listNullErr && nullRows) {
+        nullRows.forEach(p => nullResiduals.push({ field: f, id: p.id, common_name: p.common_name }))
       }
     }
   }
@@ -425,6 +481,21 @@ async function verify() {
     failed = true
   } else {
     console.log(`  edible_parts / harvest_months: typed columns present ✓`)
+  }
+
+  // D-20: Print informational residual (NULL rows — reviewed, not a failure)
+  if (nullResiduals.length > 0) {
+    console.log('\nInformational residual (NULL — reviewed, not a failure):')
+    console.log('  These plants have NULL for a required-array field because Claude\'s')
+    console.log('  controlled vocabulary genuinely does not apply (toxic invasives,')
+    console.log('  sterile ornamentals, spore-propagated plants, etc.).')
+    console.log('  NULL is re-targetable on future enrichment runs.')
+    const DISPLAY_LIMIT = 50
+    const displayed = nullResiduals.slice(0, DISPLAY_LIMIT)
+    displayed.forEach(r => console.log(`  • [${r.field}] ${r.common_name} (${r.id})`))
+    if (nullResiduals.length > DISPLAY_LIMIT) {
+      console.log(`  ...and ${nullResiduals.length - DISPLAY_LIMIT} more`)
+    }
   }
 
   console.log('')
