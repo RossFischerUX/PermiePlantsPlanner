@@ -16,7 +16,8 @@
     "backfill-zones": "tsx scripts/backfill-usda-zones.ts",
     "backfill-native-states": "tsx scripts/backfill-native-states.ts",
     "backfill-native-counties": "tsx scripts/backfill-native-counties.ts",
-    "dedupe-plants": "tsx scripts/dedupe-plants.ts"
+    "dedupe-plants": "tsx scripts/dedupe-plants.ts",
+    "verify-relationships": "tsx scripts/verify-relationships.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
