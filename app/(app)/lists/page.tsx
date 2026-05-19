@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import NewListForm from './NewListForm'
 
 export default async function ListsPage() {
@@ -10,9 +11,11 @@ export default async function ListsPage() {
 
   const { data: lists } = await supabase
     .from('plant_lists')
-    .select('*, plant_list_items(count)')
+    .select('*, plant_list_items(sort_order, plant:plants(image_url, common_name))')
     .eq('owner_id', user.id)
     .order('created_at', { ascending: false })
+
+  type PreviewItem = { sort_order: number | null; plant: { image_url: string | null; common_name: string } | null }
 
   return (
     <div className="bg-parchment min-h-screen">
@@ -27,7 +30,13 @@ export default async function ListsPage() {
         {lists && lists.length > 0 ? (
           <div className="grid sm:grid-cols-2 gap-4 mt-8">
             {lists.map((list) => {
-              const count = (list.plant_list_items as { count: number }[])?.[0]?.count ?? 0
+              const items = (list.plant_list_items as PreviewItem[] | null) ?? []
+              const count = items.length
+              const previews = [...items]
+                .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                .map((i) => i.plant)
+                .filter((p): p is { image_url: string | null; common_name: string } => !!p && !!p.image_url)
+                .slice(0, 6)
               return (
                 <div key={list.id} className="bg-cream rounded-2xl border border-warm-stone/20 shadow-warm p-6 hover:shadow-warm-md transition-shadow">
                   <div className="mb-3">
@@ -35,6 +44,23 @@ export default async function ListsPage() {
                     {list.description && <p className="text-warm-umber text-sm mt-0.5">{list.description}</p>}
                     <p className="text-xs text-warm-stone mt-1">{count} plant{count !== 1 ? 's' : ''}</p>
                   </div>
+
+                  {previews.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-1">
+                      {previews.map((plant, idx) => (
+                        <div key={idx} className="relative w-12 h-12 rounded-lg overflow-hidden border border-warm-stone/20 bg-stone-white">
+                          <Image
+                            src={plant.image_url as string}
+                            alt={plant.common_name}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                            sizes="48px"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex gap-3 mt-4">
                     <Link
                       href={`/lists/${list.id}`}
