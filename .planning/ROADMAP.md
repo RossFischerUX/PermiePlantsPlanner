@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Server-Side Filtering** - Replace client-side plant load with server-filtered, paginated queries and URL-driven filter state (completed 2026-05-18)
 - [x] **Phase 2: Functional Data Enrichment** - Populate forest layer, functional roles, establishment, and harvest data for every plant via AI pipeline (completed 2026-05-19)
-- [ ] **Phase 3: Companion Planting Schema** - Add plant_relationships table and TypeScript types for guild and companion data
+- [x] **Phase 3: Companion Planting Schema** - Add plant_relationships table and TypeScript types for guild and companion data (completed 2026-05-19)
 - [ ] **Phase 4: Location Infrastructure** - Geocode user location to Köppen-Geiger zone and persist it in user profiles
 - [ ] **Phase 5: List UX & Security** - Wire drag-and-drop reordering and tighten plant_list_items RLS policy
 
@@ -89,14 +89,14 @@ Plans:
   1. A `plant_relationships` table exists in Supabase with rows containing plant pair IDs, relationship type (HELPS/AVOIDS), mechanism text, and confidence level
   2. `lib/types.ts` exports a `PlantRelationship` type and Supabase queries for relationships compile without TypeScript errors
   3. A direct Supabase query for a known plant's relationships returns the correct rows with all expected fields populated
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 **Wave 1** *(run first — no dependencies)*
 - [x] 03-01-PLAN.md — Type contract + verification harness (RED) + live-catalog A1 resolution / SEED-MANIFEST
 
 **Wave 2** *(blocked on 03-01 — needs confirmed SEED-MANIFEST + verify harness + PlantRelationship type)*
-- [ ] 03-02-PLAN.md — DDL + fail-loud seed migrations + [BLOCKING] supabase db push + criterion #3 verify GREEN
+- [x] 03-02-PLAN.md — DDL + fail-loud seed migrations + [BLOCKING] supabase db push + criterion #3 verify GREEN
 
 ### Phase 4: Location Infrastructure
 **Goal**: Authenticated users can enter their location and have their Köppen-Geiger climate zone resolved and stored for use across sessions
@@ -131,6 +131,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Server-Side Filtering | 6/6 | Complete   | 2026-05-18 |
 | 2. Functional Data Enrichment | 4/4 | Complete   | 2026-05-19 |
-| 3. Companion Planting Schema | 1/2 | In Progress|  |
+| 3. Companion Planting Schema | 2/2 | Complete   | 2026-05-19 |
 | 4. Location Infrastructure | 0/TBD | Not started | - |
 | 5. List UX & Security | 0/TBD | Not started | - |
