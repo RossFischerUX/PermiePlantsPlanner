@@ -309,20 +309,16 @@ test.describe('Plant detail page — public', () => {
   })
 
   test('Forest Layer & Succession section renders with layer or succession data', async ({ page }) => {
+    // invasivePlantId = common ivy (3de58838-baf3-4c42-84b8-ad1b2d359529)
+    // Deterministically has succession_role: ["pioneer","early successional"] post-D-20 enrichment.
     const { invasivePlantId } = getPlantIds()
-    test.skip(!invasivePlantId, 'No test plant id available')
+    test.skip(!invasivePlantId, 'No test plant id available — run import-permaculture to completion first')
     await page.goto(`/plants/${invasivePlantId!}`)
     await page.waitForURL(/\/plants\/[^/]+$/, { timeout: 10000 })
     const forestSection = page.locator('section').filter({ hasText: 'Forest Layer & Succession' })
-    const hasForestSection = await forestSection.count()
-    if (hasForestSection > 0) {
-      await expect(forestSection).toBeVisible({ timeout: 10000 })
-      const layerCell = forestSection.locator('p', { hasText: /Forest Garden Layer/i })
-      const successionPills = forestSection.locator('span.rounded-full')
-      const hasLayer = await layerCell.count()
-      const hasPills = await successionPills.count()
-      expect(hasLayer + hasPills).toBeGreaterThan(0)
-    }
+    await expect(forestSection).toBeVisible({ timeout: 10000 })
+    // common ivy has succession_role — at least one rounded-full pill must be visible
+    await expect(forestSection.locator('span.rounded-full').first()).toBeVisible()
   })
 
   test('Establishment & Care section shows at least one InfoCell or pill', async ({ page }) => {
