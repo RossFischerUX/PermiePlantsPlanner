@@ -89,11 +89,11 @@ Plans:
   1. A `plant_relationships` table exists in Supabase with rows containing plant pair IDs, relationship type (HELPS/AVOIDS), mechanism text, and confidence level
   2. `lib/types.ts` exports a `PlantRelationship` type and Supabase queries for relationships compile without TypeScript errors
   3. A direct Supabase query for a known plant's relationships returns the correct rows with all expected fields populated
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 **Wave 1** *(run first — no dependencies)*
-- [ ] 03-01-PLAN.md — Type contract + verification harness (RED) + live-catalog A1 resolution / SEED-MANIFEST
+- [x] 03-01-PLAN.md — Type contract + verification harness (RED) + live-catalog A1 resolution / SEED-MANIFEST
 
 **Wave 2** *(blocked on 03-01 — needs confirmed SEED-MANIFEST + verify harness + PlantRelationship type)*
 - [ ] 03-02-PLAN.md — DDL + fail-loud seed migrations + [BLOCKING] supabase db push + criterion #3 verify GREEN
@@ -131,6 +131,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Server-Side Filtering | 6/6 | Complete   | 2026-05-18 |
 | 2. Functional Data Enrichment | 4/4 | Complete   | 2026-05-19 |
-| 3. Companion Planting Schema | 0/2 | Planned | - |
+| 3. Companion Planting Schema | 1/2 | In Progress|  |
 | 4. Location Infrastructure | 0/TBD | Not started | - |
 | 5. List UX & Security | 0/TBD | Not started | - |
