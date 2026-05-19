@@ -133,6 +133,7 @@ npm run fix-images              # validate/fix image URLs
 npm run backfill-zones          # parse usda_zones text → usda_zone_min/max integers (idempotent)
 npm run backfill-native-states  # Claude-inferred native_states arrays (idempotent)
 npm run backfill-native-counties  # Flora API county data — needs FLORA_API_KEY (deferred)
+npm run dedupe-plants             # de-dupe plants table (DRY-RUN; --apply to write)
 ```
 Rate-limited to 10 Claude API calls per 15s — don't remove the delay.
 
