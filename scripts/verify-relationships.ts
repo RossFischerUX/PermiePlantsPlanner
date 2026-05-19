@@ -59,10 +59,11 @@ async function main() {
   }
 
   // D-06: all three confidence levels appear somewhere in the full seed (global check).
-  const { data: allConf } = await supabase
+  const { data: allConf, error: confErr } = await supabase
     .from('plant_relationships')
     .select('confidence')
     .returns<{ confidence: string }[]>()
+  if (confErr) throw new Error(`Confidence query failed: ${confErr.message}`)
   const levels = new Set((allConf ?? []).map(r => r.confidence))
   for (const lvl of ['verified', 'traditional', 'anecdotal']) {
     if (!levels.has(lvl)) fails.push(`confidence level "${lvl}" never used in seed`)

@@ -9,7 +9,8 @@ RETURNS UUID LANGUAGE plpgsql AS $$
 DECLARE v UUID;
 BEGIN
   SELECT id INTO STRICT v FROM plants
-    WHERE common_name ILIKE p_name OR latin_name ILIKE p_latin;
+    WHERE lower(btrim(common_name)) = lower(btrim(p_name))
+      AND lower(btrim(latin_name)) = lower(btrim(p_latin));
   RETURN v;
 EXCEPTION
   WHEN NO_DATA_FOUND THEN
@@ -113,3 +114,5 @@ BEGIN
      'HELPS', 'verified',
      'Tagetes erecta roots exude alpha-terthienyl and thiophene derivatives that suppress root-knot nematodes (Meloidogyne spp.) — a verified, replicated companion planting benefit for solanaceous crops including tomato.');
 END $$;
+
+DROP FUNCTION IF EXISTS pg_temp.resolve_plant(TEXT, TEXT);

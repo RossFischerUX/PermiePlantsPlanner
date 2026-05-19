@@ -5,7 +5,7 @@ CREATE TABLE plant_relationships (
   relationship_type TEXT NOT NULL CHECK (relationship_type IN ('HELPS', 'AVOIDS')),
   confidence TEXT NOT NULL CHECK (confidence IN ('verified', 'traditional', 'anecdotal')),
   mechanism TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT plant_relationships_unique_triple
     UNIQUE (subject_plant_id, object_plant_id, relationship_type),
   CONSTRAINT plant_relationships_no_self_ref
