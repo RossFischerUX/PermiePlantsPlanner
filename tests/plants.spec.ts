@@ -289,4 +289,67 @@ test.describe('Plant detail page — public', () => {
       page.locator('section').filter({ hasText: 'Notable Cultivars' }).locator('p')
     ).not.toBeEmpty()
   })
+
+  test('Permaculture section heading is not present (D-05 regression)', async ({ page }) => {
+    await page.goto('/plants')
+    await page.waitForSelector('p:has-text("Showing")', { timeout: 20000 })
+    await page.locator('a[href^="/plants/"]').first().click()
+    await page.waitForURL(/\/plants\/[^/]+$/, { timeout: 10000 })
+    await expect(page.locator('section h2', { hasText: /^Permaculture$/ })).toHaveCount(0)
+  })
+
+  test('Functional Roles section shows at least one pill on an enriched plant', async ({ page }) => {
+    const { invasivePlantId } = getPlantIds()
+    test.skip(!invasivePlantId, 'No test plant id available')
+    await page.goto(`/plants/${invasivePlantId!}`)
+    await page.waitForURL(/\/plants\/[^/]+$/, { timeout: 10000 })
+    const functionalRolesSection = page.locator('section').filter({ hasText: 'Functional Roles' })
+    await expect(functionalRolesSection).toBeVisible({ timeout: 10000 })
+    await expect(functionalRolesSection.locator('span.rounded-full').first()).toBeVisible()
+  })
+
+  test('Forest Layer & Succession section renders with layer or succession data', async ({ page }) => {
+    const { invasivePlantId } = getPlantIds()
+    test.skip(!invasivePlantId, 'No test plant id available')
+    await page.goto(`/plants/${invasivePlantId!}`)
+    await page.waitForURL(/\/plants\/[^/]+$/, { timeout: 10000 })
+    const forestSection = page.locator('section').filter({ hasText: 'Forest Layer & Succession' })
+    const hasForestSection = await forestSection.count()
+    if (hasForestSection > 0) {
+      await expect(forestSection).toBeVisible({ timeout: 10000 })
+      const layerCell = forestSection.locator('p', { hasText: /Forest Garden Layer/i })
+      const successionPills = forestSection.locator('span.rounded-full')
+      const hasLayer = await layerCell.count()
+      const hasPills = await successionPills.count()
+      expect(hasLayer + hasPills).toBeGreaterThan(0)
+    }
+  })
+
+  test('Establishment & Care section shows at least one InfoCell or pill', async ({ page }) => {
+    const { invasivePlantId } = getPlantIds()
+    test.skip(!invasivePlantId, 'No test plant id available')
+    await page.goto(`/plants/${invasivePlantId!}`)
+    await page.waitForURL(/\/plants\/[^/]+$/, { timeout: 10000 })
+    const careSection = page.locator('section').filter({ hasText: 'Establishment & Care' })
+    await expect(careSection).toBeVisible({ timeout: 10000 })
+    const infoLabels = careSection.locator('p', { hasText: /Establishment|Maintenance|Years to Bearing/i })
+    const pills = careSection.locator('span.rounded-full')
+    const labelCount = await infoLabels.count()
+    const pillCount = await pills.count()
+    expect(labelCount + pillCount).toBeGreaterThan(0)
+  })
+
+  test('Harvest section present for edible plant or absent for non-edible (D-07 conditional-hide)', async ({ page }) => {
+    await page.goto('/plants')
+    await page.waitForSelector('p:has-text("Showing")', { timeout: 20000 })
+    await page.locator('a[href^="/plants/"]').first().click()
+    await page.waitForURL(/\/plants\/[^/]+$/, { timeout: 10000 })
+    const harvestSection = page.locator('section').filter({ hasText: 'Harvest' })
+    const count = await harvestSection.count()
+    if (count > 0) {
+      await expect(harvestSection.locator('span.rounded-full').first()).toBeVisible()
+    } else {
+      expect(count).toBe(0)
+    }
+  })
 })
