@@ -13,7 +13,7 @@ findings:
   warning: 5
   info: 4
   total: 10
-status: issues_found
+status: resolved
 ---
 
 # Phase 3: Code Review Report
@@ -263,3 +263,53 @@ if (!SUPABASE_URL) throw new Error('NEXT_PUBLIC_SUPABASE_URL missing from .env.l
 _Reviewed: 2026-05-19_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
+
+## Resolution
+
+**Resolved: 2026-05-19**
+**Fix commits:** `b518de9` (historical files + harness), `9dfa2a9` (forward corrective migration)
+
+### CR-01: OR-matching resolver silently binds wrong plant
+
+**Fixed in:** `b518de9` (historical `20260519084147_seed_plant_relationships.sql`) + `9dfa2a9` (new `20260519085708_reseed_plant_relationships_safe.sql`)
+
+Replaced the unsafe `WHERE common_name ILIKE p_name OR latin_name ILIKE p_latin` with:
+```sql
+WHERE lower(btrim(common_name)) = lower(btrim(p_name))
+  AND lower(btrim(latin_name)) = lower(btrim(p_latin))
+```
+Both name components are now required to match the same row conjunctively. No ILIKE wildcards remain (resolves WR-04 simultaneously). The corrective migration (`20260519085708`) deleted the live rows and re-seeded all 15 pairs through the safe resolver — resolver fired without any RAISE exceptions, confirming all manifest plants resolve correctly under the stricter logic.
+
+### WR-01: Confidence query error silently discarded
+
+**Fixed in:** `b518de9` (`scripts/verify-relationships.ts`)
+
+Added `error: confErr` to the destructuring and an explicit `if (confErr) throw new Error(...)` guard immediately after the query, matching the error-handling pattern of every other query in the file. A query fault now produces a distinct fatal error rather than a misleading "confidence level never used" failure.
+
+### WR-03: `pg_temp.resolve_plant` left alive after DO block
+
+**Fixed in:** `b518de9` (historical `20260519084147_seed_plant_relationships.sql`) + `9dfa2a9` (new `20260519085708_reseed_plant_relationships_safe.sql`)
+
+Appended `DROP FUNCTION IF EXISTS pg_temp.resolve_plant(TEXT, TEXT);` after the `DO $$ ... END $$;` block in both the edited historical migration (fresh-env correctness) and the new forward migration (live correctness).
+
+### WR-04: ILIKE wildcard metacharacter risk
+
+**Fixed in:** `b518de9` and `9dfa2a9` (combined with CR-01 fix)
+
+Eliminated `ILIKE` entirely in the resolver, switching to `lower(btrim())` equality. No manifest name contains metacharacters, but the resolver is no longer susceptible to latent wildcard broadening.
+
+### WR-05: `created_at` nullable mismatch with TS interface
+
+**Fixed in:** `b518de9` (`20260519084146_create_plant_relationships_table.sql` line 8) + `9dfa2a9` (live `ALTER TABLE ... SET NOT NULL`)
+
+DDL migration updated to `TIMESTAMPTZ NOT NULL DEFAULT now()` for fresh-env correctness. The forward migration issues `ALTER TABLE plant_relationships ALTER COLUMN created_at SET NOT NULL;` to enforce the constraint on the live remote table (safe — all existing rows have non-null values).
+
+### WR-02: `.ilike('common_name', 'tomato').single()` brittle probe — DEFERRED
+
+WR-02 was reviewed and consciously deferred. The `.ilike('common_name', 'tomato').single()` probe is brittle against future catalog growth (a second tomato-named cultivar would break the gate), but this is a future-catalog-growth concern only — the live catalog (1455 rows as of 2026-05-19) has exactly one row matching `common_name = 'tomato'`, and the verification gate passes today. Fixing it would require changing the probe to match by latin name (`Solanum lycopersicum`) for stability. Tracked as a known limitation; not a current defect.
+
+### Outcome
+
+- `supabase db push` applied `20260519085708` cleanly — no RAISE exceptions.
+- `npm run verify-relationships` exits 0: "6 tomato relationships, all fields populated, D-06 coverage met."
+- `npm run build` exits 0 (13/13 pages generated; pre-existing ESLint warnings in `AddToListClient.tsx` are unrelated).
