@@ -268,10 +268,133 @@ async function dryRun(reportJsonPath: string | null) {
   console.log('\nDRY-RUN complete. No writes made. Pass --apply to run the destructive path.')
 }
 
-// ─── Apply (stub — implemented in Task C) ────────────────────────────────────
+// ─── Apply (destructive path) ────────────────────────────────────────────────
 
 async function apply() {
-  throw new Error('apply not implemented')
+  console.log('Permaculture Plant Picker — De-dupe Plants (--apply)')
+  console.log('=====================================================\n')
+  console.log('WARNING: This will permanently DELETE duplicate plant rows from production.\n')
+
+  // Step 1: Fresh read — do not trust any stale plan file
+  console.log('Step 1: Recomputing dedupe plan from live DB...')
+  const [plants, joinRows] = await Promise.all([fetchAllPlants(), fetchAllJoinRows()])
+  const { groups, totalRows } = buildGroups(plants, joinRows)
+
+  if (groups.length === 0) {
+    console.log(`Total plant rows : ${totalRows}`)
+    console.log('\nNo duplicate groups found — nothing to do. (Already clean or already applied.)')
+    return
+  }
+
+  console.log(`Total plant rows        : ${totalRows}`)
+  console.log(`Duplicate groups        : ${groups.length}`)
+  const totalDupeRows = groups.reduce((acc, g) => acc + g.dupeIds.length, 0)
+  const totalRefRows = groups.reduce((acc, g) => acc + g.references.length, 0)
+  console.log(`Duplicate rows to delete: ${totalDupeRows}`)
+  console.log(`Join rows to process    : ${totalRefRows}`)
+  console.log('')
+
+  // Build an in-memory set of (list_id, plant_id) pairs for fast canonical-presence checks.
+  // We'll update this set as we repoint rows, so subsequent groups see current state.
+  const listPlantSet = new Set<string>(joinRows.map(j => `${j.list_id}:${j.plant_id}`))
+
+  let refsRepointed = 0
+  let refsDeletedRedundant = 0
+  let plantRowsDeleted = 0
+  let groupErrors = 0
+
+  // Step 2: Process each group — repoint/delete join rows FIRST, then delete dupe plants
+  for (let gi = 0; gi < groups.length; gi++) {
+    const group = groups[gi]
+    let groupOk = true
+
+    // Process each dupe plant's join rows
+    for (const dupeId of group.dupeIds) {
+      const dupeRefs = group.references.filter(r => r.dupePlantId === dupeId)
+      for (const ref of dupeRefs) {
+        const canonicalKey = `${ref.listId}:${group.canonicalId}`
+        if (listPlantSet.has(canonicalKey)) {
+          // The canonical plant is already in this list — DELETE the redundant join row
+          const { error } = await supabase
+            .from('plant_list_items')
+            .delete()
+            .eq('id', ref.joinRowId)
+          if (error) {
+            console.error(`  ERROR deleting redundant join row ${ref.joinRowId}: ${error.message}`)
+            groupOk = false
+          } else {
+            // Remove the dupe-key from the set (no longer exists)
+            listPlantSet.delete(`${ref.listId}:${dupeId}`)
+            refsDeletedRedundant++
+          }
+        } else {
+          // Repoint: UPDATE plant_id from dupe to canonical
+          const { error } = await supabase
+            .from('plant_list_items')
+            .update({ plant_id: group.canonicalId })
+            .eq('id', ref.joinRowId)
+          if (error) {
+            console.error(`  ERROR repointing join row ${ref.joinRowId}: ${error.message}`)
+            groupOk = false
+          } else {
+            // Update in-memory set: remove old dupe-key, add canonical-key
+            listPlantSet.delete(`${ref.listId}:${dupeId}`)
+            listPlantSet.add(canonicalKey)
+            refsRepointed++
+          }
+        }
+      }
+    }
+
+    if (!groupOk) {
+      console.error(`  Skipping plant deletion for group "${group.key}" due to join-row errors (FK safety).`)
+      groupErrors++
+      continue
+    }
+
+    // Step 3: All references cleared for this group — now safe to DELETE dupe plant rows
+    const { error } = await supabase
+      .from('plants')
+      .delete()
+      .in('id', group.dupeIds)
+    if (error) {
+      console.error(`  ERROR deleting dupe plants for group "${group.key}": ${error.message}`)
+      groupErrors++
+    } else {
+      plantRowsDeleted += group.dupeIds.length
+    }
+
+    if ((gi + 1) % 25 === 0 || gi === groups.length - 1) {
+      console.log(`  Processed ${gi + 1}/${groups.length} groups...`)
+    }
+  }
+
+  console.log('\nApply complete.\n')
+
+  // Step 4: Post-apply verification — fresh read, expect 0 dupe groups
+  console.log('Step 4: Post-apply verification (fresh read)...')
+  const [plantsAfter] = await Promise.all([fetchAllPlants(), fetchAllJoinRows()])
+  const { groups: groupsAfter, totalRows: totalRowsAfter } = buildGroups(plantsAfter, [])
+  const dupeGroupsRemaining = groupsAfter.length
+
+  console.log('\n══════════════════════════════════════════')
+  console.log('  FINAL SUMMARY')
+  console.log('══════════════════════════════════════════')
+  console.log(`  Plant rows before        : ${totalRows}`)
+  console.log(`  Plant rows after         : ${totalRowsAfter}`)
+  console.log(`  Plant rows deleted       : ${plantRowsDeleted}`)
+  console.log(`  References repointed     : ${refsRepointed}`)
+  console.log(`  Redundant join rows del  : ${refsDeletedRedundant}`)
+  console.log(`  Groups with errors       : ${groupErrors}`)
+  console.log(`  Duplicate groups remaining: ${dupeGroupsRemaining}`)
+  console.log('══════════════════════════════════════════\n')
+
+  if (dupeGroupsRemaining > 0) {
+    console.error(`FAIL: ${dupeGroupsRemaining} duplicate group(s) remain after apply!`)
+    process.exit(1)
+  } else {
+    console.log('PASS: Zero duplicate groups remain. Catalog is clean.')
+  }
 }
 
 // ─── Entry point ─────────────────────────────────────────────────────────────
