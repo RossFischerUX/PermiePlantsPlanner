@@ -16,7 +16,7 @@
 - [x] **DATA-02**: Each plant has forest layer classification (canopy, sub-canopy, shrub, herbaceous, ground cover, root/rhizosphere, vine, mycelium) and succession role (pioneer, early successional, climax, etc.)
 - [x] **DATA-03**: Each plant has establishment and care data: propagation methods, establishment difficulty (easy/moderate/challenging), approximate years to bearing (for food plants), and maintenance level
 - [x] **DATA-04**: Each plant has edible parts (leaf, fruit, nut, seed, root, flower, bark, sap) and approximate harvest months — enabling seasonal planning in list reports
-- [ ] **DATA-05**: All functional data fields are populated via Claude Haiku structured output enrichment pipeline with skip-if-populated guard and post-run verification
+- [x] **DATA-05**: All functional data fields are populated via Claude Haiku structured output enrichment pipeline with skip-if-populated guard and post-run verification
 
 ### Companion Planting
 
@@ -87,7 +87,7 @@ Deferred to next milestone. Tracked but not in current roadmap.
 | DATA-02 | Phase 2 | Complete |
 | DATA-03 | Phase 2 | Complete |
 | DATA-04 | Phase 2 | Complete |
-| DATA-05 | Phase 2 | Pending |
+| DATA-05 | Phase 2 | Complete |
 | COMP-01 | Phase 3 | Pending |
 | COMP-02 | Phase 3 | Pending |
 | LOC-01 | Phase 4 | Pending |
