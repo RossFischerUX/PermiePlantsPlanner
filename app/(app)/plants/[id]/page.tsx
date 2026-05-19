@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import AddToListClient from './AddToListClient'
 import { decodeZone } from '@/lib/zones'
-import { SUN_ICONS, WATER_ICONS } from '@/lib/plant-labels'
+import { SUN_ICONS, WATER_ICONS, MONTH_OPTIONS, FUNCTIONAL_INFO_LABELS } from '@/lib/plant-labels'
 
 function InfoCell({ label, value }: { label: string; value: string }) {
   return (
@@ -147,26 +147,87 @@ export default async function PlantDetailPage({ params }: { params: { id: string
         </section>
       )}
 
-      {/* Permaculture */}
-      {(plant.forest_garden_layer || plant.permaculture_uses?.length) && (
-        <section>
-          <h2 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-4">Permaculture</h2>
+      {/* Functional Roles */}
+      {plant.permaculture_uses?.length ? (
+        <section className="mb-8">
+          <h2 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-4">Functional Roles</h2>
+          <div className="flex flex-wrap gap-2">
+            {plant.permaculture_uses.map((use: string) => (
+              <span key={use} className="text-xs bg-terracotta/10 text-terracotta px-3 py-1.5 rounded-full border border-terracotta/20 capitalize">{use}</span>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Forest Layer & Succession */}
+      {(plant.forest_garden_layer || plant.succession_role?.length) ? (
+        <section className="mb-8">
+          <h2 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-4">Forest Layer & Succession</h2>
           {plant.forest_garden_layer && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-              <InfoCell label="Forest Garden Layer" value={plant.forest_garden_layer} />
+              <InfoCell label={FUNCTIONAL_INFO_LABELS.forest_garden_layer} value={plant.forest_garden_layer} />
             </div>
           )}
-          {plant.permaculture_uses?.length && (
+          {plant.succession_role?.length ? (
             <div className="flex flex-wrap gap-2">
-              {plant.permaculture_uses.map((use: string) => (
-                <span key={use} className="text-xs bg-terracotta/10 text-terracotta px-3 py-1.5 rounded-full border border-terracotta/20 capitalize">
-                  {use}
-                </span>
+              {plant.succession_role.map((role: string) => (
+                <span key={role} className="text-xs bg-terracotta/10 text-terracotta px-3 py-1.5 rounded-full border border-terracotta/20 capitalize">{role}</span>
               ))}
             </div>
-          )}
+          ) : null}
         </section>
-      )}
+      ) : null}
+
+      {/* Establishment & Care */}
+      {(() => {
+        const careCells = [
+          plant.establishment_difficulty && { label: FUNCTIONAL_INFO_LABELS.establishment_difficulty, value: plant.establishment_difficulty },
+          plant.maintenance_level && { label: FUNCTIONAL_INFO_LABELS.maintenance_level, value: plant.maintenance_level },
+          plant.years_to_bearing != null && { label: FUNCTIONAL_INFO_LABELS.years_to_bearing, value: `${plant.years_to_bearing} years` },
+        ].filter(Boolean) as { label: string; value: string }[]
+        const hasCare = careCells.length > 0 || plant.propagation_methods?.length
+        return hasCare ? (
+          <section className="mb-8">
+            <h2 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-4">Establishment & Care</h2>
+            {careCells.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                {careCells.map(cell => (
+                  <InfoCell key={cell.label} label={cell.label} value={cell.value} />
+                ))}
+              </div>
+            )}
+            {plant.propagation_methods?.length ? (
+              <div className="flex flex-wrap gap-2">
+                {plant.propagation_methods.map((method: string) => (
+                  <span key={method} className="text-xs bg-terracotta/10 text-terracotta px-3 py-1.5 rounded-full border border-terracotta/20 capitalize">{method}</span>
+                ))}
+              </div>
+            ) : null}
+          </section>
+        ) : null
+      })()}
+
+      {/* Harvest */}
+      {(plant.edible_parts?.length || plant.harvest_months?.length) ? (
+        <section className="mb-8">
+          <h2 className="text-[11px] font-semibold text-warm-stone uppercase tracking-[0.06em] mb-4">Harvest</h2>
+          {plant.edible_parts?.length ? (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {plant.edible_parts.map((part: string) => (
+                <span key={part} className="text-xs bg-terracotta/10 text-terracotta px-3 py-1.5 rounded-full border border-terracotta/20 capitalize">{part}</span>
+              ))}
+            </div>
+          ) : null}
+          {plant.harvest_months?.length ? (
+            <div className="flex flex-wrap gap-2">
+              {[...plant.harvest_months].sort((a: string, b: string) => MONTH_OPTIONS.indexOf(a) - MONTH_OPTIONS.indexOf(b)).map((month: string) => (
+                <span key={month} className="text-xs bg-terracotta/10 text-terracotta px-3 py-1.5 rounded-full border border-terracotta/20 capitalize">{month}</span>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
       {/* Notable Cultivars */}
       {plant.notable_cultivars && (
         <section className="mt-8 pt-8 border-t border-warm-stone/20">
