@@ -24,10 +24,9 @@ A user with a site to plant can find the right plants for their specific place, 
 - ✓ AI-enriched plant data pipeline (Claude Haiku + iNaturalist import scripts) — existing
 - ✓ Plant functional data: functional roles, forest layer, edible parts, harvest months — Validated in Phase 2 (DATA-02/04); rendered in dedicated detail-page sections
 - ✓ Establishment & care data: propagation methods, establishment difficulty, succession role, maintenance — Validated in Phase 2 (DATA-02/03/05). Per decision D-20, succession_role/permaculture_uses/propagation_methods are NULL (re-targetable, never empty-array) for species where the controlled vocab genuinely doesn't apply (non-successional ornamentals, toxic invasives, spore plants) — the `--verify` gate hard-fails only on the dishonest empty-array state.
+- ✓ Companion planting relationships: guilds, compatible pairings, antagonists — Validated in Phase 3 (COMP-01/02). `plant_relationships` table (HELPS/AVOIDS, confidence tiers, mechanism) + `PlantRelationship` TS contract, live-seeded with 15 curated pairs via a fail-loud conjunctive resolver.
 
 ### Active
-
-- [ ] Companion planting relationships: guilds, compatible pairings, antagonists
 - [ ] Climate & microclimate fit: drought tolerance, flood tolerance, soil type, slope/aspect preferences
 - [ ] Location-based personalization: user enters location → system infers Köppen-Geiger climate zone → UI weights relevant attributes accordingly
 - [ ] Curated, high-quality database expansion: grow beyond current ~250 plants with verified data on the most important permaculture species
@@ -96,4 +95,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-19 after Phase 2 (Functional Data Enrichment) completion*
+*Last updated: 2026-05-19 after Phase 3 (Companion Planting Schema) completion*
