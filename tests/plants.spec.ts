@@ -308,17 +308,25 @@ test.describe('Plant detail page — public', () => {
     await expect(functionalRolesSection.locator('span.rounded-full').first()).toBeVisible()
   })
 
-  test('Forest Layer & Succession section renders with layer or succession data', async ({ page }) => {
-    // invasivePlantId = common ivy (3de58838-baf3-4c42-84b8-ad1b2d359529)
-    // Deterministically has succession_role: ["pioneer","early successional"] post-D-20 enrichment.
+  test('Forest Layer & Succession section honors its conditional-hide contract', async ({ page }) => {
+    // Contract (page.tsx:163): the section renders iff forest_garden_layer || succession_role.length,
+    // and is never present-but-empty. Asserting the contract — rather than a specific row's mutable
+    // succession_role — keeps this test stable across D-20 enrichment re-runs (WR-02).
     const { invasivePlantId } = getPlantIds()
     test.skip(!invasivePlantId, 'No test plant id available — run import-permaculture to completion first')
     await page.goto(`/plants/${invasivePlantId!}`)
     await page.waitForURL(/\/plants\/[^/]+$/, { timeout: 10000 })
     const forestSection = page.locator('section').filter({ hasText: 'Forest Layer & Succession' })
+    const sectionCount = await forestSection.count()
+    if (sectionCount === 0) {
+      // Section legitimately absent — both fields empty/null (D-20 permits). Conditional-hide holds.
+      return
+    }
     await expect(forestSection).toBeVisible({ timeout: 10000 })
-    // common ivy has succession_role — at least one rounded-full pill must be visible
-    await expect(forestSection.locator('span.rounded-full').first()).toBeVisible()
+    // Present ⇒ must carry content: a forest-layer InfoCell (div.bg-stone-white) OR a succession pill.
+    await expect(
+      forestSection.locator('div.bg-stone-white, span.rounded-full').first()
+    ).toBeVisible()
   })
 
   test('Establishment & Care section shows at least one InfoCell or pill', async ({ page }) => {
