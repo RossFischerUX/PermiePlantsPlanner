@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "02-04 Task 2 checkpoint — human must authorize live billed enrichment run (npm run enrich-functional-data)"
-last_updated: "2026-05-19T06:44:00.000Z"
-last_activity: 2026-05-19 -- Phase 02 Plan 04 Task 1 committed (f0ae261)
+stopped_at: "02-04 complete — D-20 committed, verify() reworked, {} normalized to NULL, IN-04 test unconditional"
+last_updated: "2026-05-19T07:20:00.000Z"
+last_activity: 2026-05-19
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 10
-  completed_plans: 9
-  percent: 20
+  completed_plans: 10
+  percent: 40
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-05-18)
 ## Current Position
 
 Phase: 02 (functional-data-enrichment) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 02
-Last activity: 2026-05-19 -- Phase 02 execution started
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-05-19
 
-Progress: [█████████░] 89%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -65,6 +65,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
 - Roadmap init: nuqs chosen for URL-based filter state (PERF-01); server-side pagination resolves full client-side load debt (PERF-02)
+- D-20 (02-04): {} is never acceptable for required-array fields; NULL is the re-targetable honest residual; --verify hard-fails only on {}, prints NULL as informational residual (supersedes D-19 implicit zero-NULL assumption for 3 required-array fields)
+- 02-04: No third billed enrichment run — normalization via direct service-role update; {} rows converted to NULL without Claude API calls
 
 ### Pending Todos
 
@@ -92,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-19T06:44:00.000Z
-Stopped at: "02-04 Task 2 checkpoint — human must authorize live billed enrichment run; pre-run baseline captured: succession_role {}=95 null=0; propagation_methods {}=4 null=0; permaculture_uses {}=8 null=0 (catalog: 1455 plants)"
-Resume file: .planning/phases/02-functional-data-enrichment/02-04-PLAN.md Task 2
+Last session: 2026-05-19T07:20:00.000Z
+Stopped at: "02-04 complete — D-20, verify() rework, {} normalization, IN-04 unconditional test; DATA-05 + DATA-02 closed"
+Resume file: None — 02-04 plan complete
